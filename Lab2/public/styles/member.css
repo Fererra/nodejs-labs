@@ -1,0 +1,37 @@
+body {
+  font-family: sans-serif;
+  padding: 20px;
+  line-height: 1.6;
+}
+.profile-card {
+  background: #f9f9f9;
+  border: 1px solid #ddd;
+  padding: 20px;
+  border-radius: 8px;
+  max-width: 400px;
+}
+h1 {
+  margin-top: 0;
+  color: #333;
+}
+.github-link {
+  display: inline-block;
+  margin-top: 10px;
+  padding: 8px 15px;
+  background-color: #24292e;
+  color: white;
+  text-decoration: none;
+  border-radius: 4px;
+}
+.github-link:hover {
+  background-color: #000;
+}
+.back-btn {
+  display: inline-block;
+  margin-top: 20px;
+  text-decoration: none;
+  color: #0056b3;
+}
+.back-btn:hover {
+  text-decoration: underline;
+}
