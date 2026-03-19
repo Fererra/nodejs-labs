@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="stylesheet" href="/styles/team.css">
+  <title>Команда</title>
+</head>
+<body>
+
+  <h1>Склад команди</h1>
+
+  <% if (team && team.length > 0) { %>
+    <ul class="team-list">
+      <% team.forEach(function(member) { %>
+        <li>
+          <a href="/team/<%= member.id %>">
+            <%= member.firstName %> <%= member.lastName %> – Група: <%= member.group %>
+          </a>
+        </li>
+      <% }); %>
+    </ul>
+  <% } else { %>
+    <p>Список команди наразі порожній.</p>
+  <% } %>
+
+</body>
+</html>
