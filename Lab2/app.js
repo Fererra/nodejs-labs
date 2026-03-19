@@ -12,7 +12,11 @@ const __dirname = dirname(__filename);
 app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
 
-app.use(express.static("public"));
+app.use(express.static(join(__dirname, "public"), { index: false }));
+
+app.get("/", (req, res) => {
+  res.sendFile(join(__dirname, "public", "index.html"));
+});
 
 app.get("/team", (req, res) => {
   res.render("team", { team: teamData });
