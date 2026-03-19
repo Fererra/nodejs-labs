@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="uk">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title><%= member.firstName %> <%= member.lastName %></title>
+    <link rel="stylesheet" href="/styles/member.css">
+</head>
+<body>
+
+  <div class="profile-card">
+    <h1><%= member.firstName %> <%= member.lastName %></h1>
+    <p><strong>Група:</strong> <%= member.group %></p>
+    
+    <% if (member.github) { %>
+      <a href="<%= member.github %>" target="_blank" class="github-link">Профіль на GitHub</a>
+    <% } else { %>
+      <p><em>GitHub не вказано</em></p>
+    <% } %>
+  </div>
+
+  <a href="/team" class="back-btn">← Повернутися до списку</a>
+
+</body>
+</html>
