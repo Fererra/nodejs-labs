@@ -1,7 +1,7 @@
 import express from "express";
 import { dirname, join } from "path";
 import { fileURLToPath } from 'url';
-import { findById } from "./src/data.js";
+import { teamData, findById } from "./src/data.js";
 
 const app = express();
 const PORT = 3000;
@@ -13,6 +13,10 @@ app.set('view engine', 'ejs');
 app.set('views', join(__dirname, 'views'));
 
 app.use(express.static("public"));
+
+app.get("/team", (req, res) => {
+  res.render("team", { team: teamData });
+});
 
 app.get("/team/:id", (req, res) => {
   const id = req.params.id;
