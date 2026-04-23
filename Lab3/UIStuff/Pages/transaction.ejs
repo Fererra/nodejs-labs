@@ -1,0 +1,37 @@
+<%- include('../PageParts/head') %>
+<%- include('../PageParts/header') %>
+
+<h1 class="text-2xl font-bold mb-6">Список транзакцій</h1>
+
+<div class="bg-white shadow rounded-lg overflow-hidden">
+    <table class="w-full text-left">
+        <thead class="bg-gray-100 border-b">
+            <tr>
+                <th class="p-3">Дата</th>
+                <th class="p-3">Категорія</th>
+                <th class="p-3">Сума</th>
+                <th class="p-3">Тип</th>
+            </tr>
+        </thead>
+        <tbody>
+            <% if (transactions && transactions.length > 0) { %>
+                <% transactions.forEach(item => { %>
+                    <tr class="border-b hover:bg-gray-50">
+                        <td class="p-3"><%= item.date %></td>
+                        <td class="p-3"><%= item.category %></td>
+                        <td class="p-3 font-semibold <%= item.type === 'income' ? 'text-green-600' : 'text-red-600' %>">
+                            <%= item.amount %> грн
+                        </td>
+                        <td class="p-3 capitalize"><%= item.type %></td>
+                    </tr>
+                <% }); %>
+            <% } else { %>
+                <tr>
+                    <td colspan="4" class="p-3 text-center text-gray-500">Записів поки немає</td>
+                </tr>
+            <% } %>
+        </tbody>
+    </table>
+</div>
+
+<%- include('../PageParts/footer') %>
