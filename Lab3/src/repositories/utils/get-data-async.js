@@ -1,4 +1,4 @@
-import fs from "fs";
+import fs from 'fs/promises';
 
 
 //Завантаження даних з файлу за допомогою async/await
