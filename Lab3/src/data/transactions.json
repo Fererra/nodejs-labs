@@ -1,26 +1,50 @@
 [
   {
-    "id": "1",
-    "type": "expense",
-    "amount": 1500,
-    "purchase": "Продукти на тиждень",
-    "category": "Продукти",
-    "date": "2024-03-20"
+    "id": 1,
+    "type": "income",
+    "amount": 15000,
+    "purchase": "Аванс за березень",
+    "category": "Зарплата",
+    "date": "2026-03-15"
   },
   {
-    "id": "2",
+    "id": 2,
+    "type": "expense",
+    "amount": 1200,
+    "purchase": "Закупівля продуктів у супермаркеті",
+    "category": "Їжа",
+    "date": "2026-03-16"
+  },
+  {
+    "id": 3,
     "type": "expense",
     "amount": 300,
-    "purchase": "Поїздка в метро",
-    "category": "Транспорт",
-    "date": "2024-03-21"
+    "purchase": "Кава та круасан",
+    "category": "Розваги",
+    "date": "2026-03-17"
   },
   {
-    "id": "3",
+    "id": 4,
+    "type": "expense",
+    "amount": 800,
+    "purchase": "Пальне для авто",
+    "category": "Транспорт",
+    "date": "2026-03-18"
+  },
+  {
+    "id": 5,
     "type": "income",
-    "amount": 5000,
-    "purchase": "Аванс за проєкт",
+    "amount": 20000,
+    "purchase": "Основна зарплата",
     "category": "Зарплата",
-    "date": "2024-03-22"
+    "date": "2026-04-01"
+  },
+  {
+    "id": 6,
+    "type": "expense",
+    "amount": 2500,
+    "purchase": "Оплата комунальних послуг",
+    "category": "Комуналка",
+    "date": "2026-04-05"
   }
 ]
