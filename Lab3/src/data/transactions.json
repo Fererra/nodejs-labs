@@ -1,0 +1,26 @@
+[
+  {
+    "id": "1",
+    "type": "expense",
+    "amount": 1500,
+    "purchase": "Продукти на тиждень",
+    "category": "Продукти",
+    "date": "2024-03-20"
+  },
+  {
+    "id": "2",
+    "type": "expense",
+    "amount": 300,
+    "purchase": "Поїздка в метро",
+    "category": "Транспорт",
+    "date": "2024-03-21"
+  },
+  {
+    "id": "3",
+    "type": "income",
+    "amount": 5000,
+    "purchase": "Аванс за проєкт",
+    "category": "Зарплата",
+    "date": "2024-03-22"
+  }
+]
