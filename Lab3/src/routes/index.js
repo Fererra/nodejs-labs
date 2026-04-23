@@ -5,4 +5,5 @@ const router = Router();
 // Наприклад: const financeRouter = require('./finance');
 // router.use('/finance', financeRouter);
 
+
 export default router;
