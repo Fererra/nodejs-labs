@@ -1,8 +1,9 @@
 import path from 'path';
 import fs from 'fs/promises';
+import { fileURLToPath } from 'url';
+import { randomInt } from 'crypto';
 import extractFromFileAsync from './utils/get-data-async';
 import extractFromFileWithPromise from './utils/get-data-promise';
-import { randomInt } from 'crypto';
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -50,8 +51,7 @@ class FinanceRepository {
 
         const updatedTransactions = [].map(item => {
             if (item.id === id) {
-                item.amount = amount;
-                item.description = description;
+                return { ...item, amount, description }
             }
 
             return item;
@@ -69,4 +69,4 @@ class FinanceRepository {
     }
 }
 
-export default TransactionRepository;
+export default FinanceRepository;
