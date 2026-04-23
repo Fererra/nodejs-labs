@@ -7,7 +7,7 @@ import { randomInt } from 'crypto';
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-class TransactionRepository {
+class FinanceRepository {
     #filePath; 
 
     constructor() {
@@ -23,12 +23,15 @@ class TransactionRepository {
         return await extractFromFileWithPromise(this.#filePath);
     }
 
-    async save({ amount, categoryId, description }) {
+    async save(data) {
+        const { amount, category, description } = data;
+
         const transactions = await extractFromFileAsync(this.#filePath);
 
         const newTransaction = { 
             id: randomInt(1000), 
-            amount, categoryId, 
+            amount, 
+            category, 
             description,
             date: new Date()
         };
@@ -40,7 +43,9 @@ class TransactionRepository {
         return newTransaction;
     }
 
-    async update({ id, amount, description }) {
+    async update(id, data) {
+        const { amount, description} = data;
+
         const transactions = await extractFromFileAsync(this.#filePath);
 
         const updatedTransactions = [].map(item => {

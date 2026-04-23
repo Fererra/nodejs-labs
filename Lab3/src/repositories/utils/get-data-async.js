@@ -1,5 +1,7 @@
 import fs from "fs";
 
+
+//Завантаження даних з файлу за допомогою async/await
 const extractFromFileAsync = async (filePath) => {
     try {
         const data = await fs.readFile(filePath, "utf-8");
