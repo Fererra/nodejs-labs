@@ -58,7 +58,7 @@ class TransactionRepository {
     async update(id, dto) {
         const transactions = await extractFromFileAsync(this.#filePath);
 
-        const updatedTransactions = [].map(item => {
+        const updatedTransactions = transactions.map(item => {
             if (item.id === id) {
                 return { ...item, ...dto }
             }
