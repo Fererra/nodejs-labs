@@ -75,7 +75,7 @@ class TransactionRepository {
 
         const updatedTransactions = transactions.filter(item => item.id !== id);
 
-        const data = JSON.stringify(transactions, null, 2);
+        const data = JSON.stringify(updatedTransactions, null, 2);
         await fs.writeFile(this.#filePath, data);
     }
 }

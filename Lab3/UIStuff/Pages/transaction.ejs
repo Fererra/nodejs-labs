@@ -10,7 +10,9 @@
                 <th class="p-3">Дата</th>
                 <th class="p-3">Категорія</th>
                 <th class="p-3">Сума</th>
+                <th class="p-3">Назва</th>
                 <th class="p-3">Тип</th>
+                <th class="p-3"></th>
             </tr>
         </thead>
         <tbody>
@@ -22,7 +24,14 @@
                         <td class="p-3 font-semibold <%= item.type === 'income' ? 'text-green-600' : 'text-red-600' %>">
                             <%= item.amount %> грн
                         </td>
+                        <td class="p-3"><%= item.purchase %></td>
                         <td class="p-3 capitalize"><%= item.type %></td>
+                        <td class="p-3 capitalize">
+                            <form action="/delete/<%= item.id %>" method="POST" style="display: inline-block; margin: 0;">
+                                <button type="submit" class="text-red-500 hover:text-red-700">🗑</button>
+                            </form>
+                        </td>
+
                     </tr>
                 <% }); %>
             <% } else { %>

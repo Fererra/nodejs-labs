@@ -11,7 +11,7 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = dirname(__filename);
 
 app.set("view engine", "ejs");
-app.set("views", join(__dirname, "UIStuff"));
+app.set("views", join(__dirname, "UIStuff/Pages")); //додала Pages
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));

@@ -3,8 +3,14 @@ class FinanceService {
         this.repository = financeRepository;
     }
 
+    async getAllRecords(){
+        return await this.repository.getAll();
+    }
+    async getRecordById(id){
+        return await this.repository.getById(id);
+    }
     async createRecord(data) {
-        return await this.repository.create(data);
+        return await this.repository.save(data);//було create, але в репозиторії save, тому змінила на save
     }
 
     async updateRecord(id, data) {
@@ -53,4 +59,4 @@ class FinanceService {
     }
 }
 
-module.exports = FinanceService;
+export default FinanceService;

@@ -2,12 +2,16 @@
 <%- include('../PageParts/header') %>
 
 <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
-    <h2 class="text-2xl font-bold mb-6">Додати запис</h2>
+    <h2 class="text-2xl font-bold mb-6">Додати транзакцію</h2>
     
     <form action="/save" method="POST" class="space-y-4">
         <div>
             <label class="block text-sm font-medium">Сума</label>
             <input type="number" name="amount" required class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none">
+        </div>
+        <div>
+            <label class="block text-sm font-medium">Назва</label>
+            <input type="text" name="purchase" required class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none">
         </div>
         
         <div>
