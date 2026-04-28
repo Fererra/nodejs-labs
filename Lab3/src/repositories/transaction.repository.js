@@ -58,15 +58,16 @@ class TransactionRepository {
     async update(id, dto) {
         const transactions = await extractFromFileAsync(this.#filePath);
 
+        // Створюємо новий масив з оновленими даними
         const updatedTransactions = transactions.map(item => {
             if (item.id === id) {
-                return { ...item, ...dto }
+                return { ...item, ...dto };
             }
-
             return item;
         });
 
-        const data = JSON.stringify(transactions, null, 2);
+        // Записуємо САМЕ updatedTransactions
+        const data = JSON.stringify(updatedTransactions, null, 2); 
         await fs.writeFile(this.#filePath, data);       
     }
 

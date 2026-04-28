@@ -3,8 +3,22 @@ class FinanceService {
         this.repository = financeRepository;
     }
 
-    async getAllRecords(){
-        return await this.repository.getAll();
+    async getAllRecords(filters = {}) {
+        let records = await this.repository.getAll();
+
+        if (filters.type) {
+            records = records.filter(record => record.type === filters.type);
+        }
+
+        if (filters.startDate) {
+            records = records.filter(record => record.date >= filters.startDate);
+        }
+
+        if (filters.endDate) {
+            records = records.filter(record => record.date <= filters.endDate);
+        }
+
+        return records;
     }
     async getRecordById(id){
         return await this.repository.getById(id);

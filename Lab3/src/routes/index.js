@@ -19,11 +19,7 @@ router.get("/add-record-page", (req, res)=>{
 
 router.post("/save", controller.createRecord)
 
-router.get("/transactions", async (req, res)=>{
-    const transactions = await controller.getAllRecords()
-    console.log(transactions)
-    res.render("transaction", {transactions})
-})
+router.get("/transactions", controller.getAllRecords.bind(controller));
 
 router.get("/transaction/:id", controller.getRecordById)
 

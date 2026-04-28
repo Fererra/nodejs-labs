@@ -5,14 +5,20 @@ class FinanceController {
 
     getAllRecords = async (req, res) => {
         try {
-            const records = await this.service.getAllRecords();
-            return records;
+            const filters = {
+                type: req.query.type,
+                startDate: req.query.startDate,
+                endDate: req.query.endDate
+            };
+            const records = await this.service.getAllRecords(filters);
+            
+            return res.render("transaction", { transactions: records }); 
         } catch (error) {
             console.error("Error fetching all records:", error);
-            return res.status(500).json({ message: "Failed to fetch records", error: error.message });
+            return res.status(500).send("Failed to fetch records");
         }
     }
-
+    
     getRecordById = async (req, res) =>{
         const id = Number(req.params.id)
         const result = await this.service.getRecordById(id)
@@ -55,14 +61,6 @@ class FinanceController {
             console.error("Error deleting record:", error);
             return res.status(500).json({ message: "Failed to delete record", error: error.message });
         }
-    }
-
-    getRecordsByPeriod = async (req, res) => {
-        
-    }
-
-    getGroupedRecords = async (req, res) => {
-        
     }
 }
 

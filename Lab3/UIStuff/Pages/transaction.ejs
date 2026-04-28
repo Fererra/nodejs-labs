@@ -3,6 +3,38 @@
 
 <h1 class="text-2xl font-bold mb-6">Список транзакцій</h1>
 
+<div class="bg-white p-4 rounded-lg shadow mb-6">
+    <form action="/transactions" method="GET" class="flex flex-wrap gap-4 items-end">
+        <div class="flex flex-col">
+            <label class="text-sm font-medium text-gray-700">Тип</label>
+            <select name="type" class="border p-2 rounded focus:ring-2 focus:ring-blue-500">
+                <option value="">Всі</option>
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+            </select>
+        </div>
+
+        <div class="flex flex-col">
+            <label class="text-sm font-medium text-gray-700">Від</label>
+            <input type="date" name="startDate" class="border p-2 rounded focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="flex flex-col">
+            <label class="text-sm font-medium text-gray-700">До</label>
+            <input type="date" name="endDate" class="border p-2 rounded focus:ring-2 focus:ring-blue-500">
+        </div>
+
+        <div class="flex gap-2">
+            <button type="submit" class="bg-blue-600 text-white px-6 py-2 rounded hover:bg-blue-700 transition">
+                Фільтрувати
+            </button>
+            <a href="/transactions" class="bg-gray-200 text-gray-700 px-4 py-2 rounded hover:bg-gray-300 transition">
+                Скинути
+            </a>
+        </div>
+    </form>
+</div>
+
 <div class="bg-white shadow rounded-lg overflow-hidden">
     <table class="w-full text-left">
         <thead class="bg-gray-100 border-b">
@@ -26,17 +58,17 @@
                         </td>
                         <td class="p-3"><%= item.purchase %></td>
                         <td class="p-3 capitalize"><%= item.type %></td>
-                        <td class="p-3 capitalize">
-                            <form action="/delete/<%= item.id %>" method="POST" style="display: inline-block; margin: 0;">
+                        <td class="p-3">
+                            <form action="/delete/<%= item.id %>" method="POST" onsubmit="return confirm('Видалити?');">
                                 <button type="submit" class="text-red-500 hover:text-red-700">🗑</button>
                             </form>
                         </td>
-
+                        
                     </tr>
                 <% }); %>
             <% } else { %>
                 <tr>
-                    <td colspan="4" class="p-3 text-center text-gray-500">Записів поки немає</td>
+                    <td colspan="6" class="p-3 text-center text-gray-500">Записів за вказаними критеріями не знайдено</td>
                 </tr>
             <% } %>
         </tbody>
