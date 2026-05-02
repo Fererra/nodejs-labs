@@ -1,76 +1,47 @@
 class FinanceService {
-    constructor(financeRepository) {
-        this.repository = financeRepository;
+  constructor(financeRepository) {
+    this.repository = financeRepository;
+  }
+
+  async getAllRecords(filters = {}) {
+    let records = await this.repository.getAll();
+
+    if (filters.type) {
+      records = records.filter((record) => record.type === filters.type);
     }
 
-    async getAllRecords(filters = {}) {
-        let records = await this.repository.getAll();
-
-        if (filters.type) {
-            records = records.filter(record => record.type === filters.type);
-        }
-
-        if (filters.startDate) {
-            records = records.filter(record => record.date >= filters.startDate);
-        }
-
-        if (filters.endDate) {
-            records = records.filter(record => record.date <= filters.endDate);
-        }
-
-        return records;
-    }
-    async getRecordById(id){
-        return await this.repository.getById(id);
-    }
-    async createRecord(data) {
-        return await this.repository.save(data);//було create, але в репозиторії save, тому змінила на save
+    if (filters.category) {
+      records = records.filter((record) =>
+        record.category.toLowerCase().includes(filters.category.toLowerCase()),
+      );
     }
 
-    async updateRecord(id, data) {
-        return await this.repository.update(id, data);
+    if (filters.startDate) {
+      records = records.filter((record) => record.date >= filters.startDate);
     }
 
-    async deleteRecord(id) {
-        return await this.repository.delete(id);
+    if (filters.endDate) {
+      records = records.filter((record) => record.date <= filters.endDate);
     }
 
-    async getRecordsByPeriod(startDate, endDate) {
-        const records = await this.repository.getAll();
-        const start = new Date(startDate);
-        const end = new Date(endDate);
+    return records;
+  }
 
-        return records.filter(record => {
-            const recordDate = new Date(record.date);
-            return recordDate >= start && recordDate <= end;
-        });
-    }
+  async getRecordById(id) {
+    return await this.repository.getById(id);
+  }
 
-    async getGroupedRecords() {
-        const records = await this.repository.getAll();
+  async createRecord(data) {
+    return await this.repository.save(data);
+  }
 
-        return records.reduce((grouped, record) => {
-            const category = record.category;
+  async updateRecord(id, data) {
+    return await this.repository.update(id, data);
+  }
 
-            if (!grouped[category]) {
-                grouped[category] = {
-                    totalIncome: 0,
-                    totalExpense: 0,
-                    transactions: []
-                };
-            }
-
-            grouped[category].transactions.push(record);
-
-            if (record.type === 'income') {
-                grouped[category].totalIncome += record.amount;
-            } else if (record.type === 'expense') {
-                grouped[category].totalExpense += record.amount;
-            }
-
-            return grouped;
-        }, {});
-    }
+  async deleteRecord(id) {
+    return await this.repository.delete(id);
+  }
 }
 
 export default FinanceService;
