@@ -1,0 +1,42 @@
+[
+  {
+    "id": 3,
+    "type": "expense",
+    "amount": 300,
+    "purchase": "Кава та круасан",
+    "category": "Розваги",
+    "date": "2026-03-17"
+  },
+  {
+    "id": 4,
+    "type": "expense",
+    "amount": 800,
+    "purchase": "Пальне для авто",
+    "category": "Транспорт",
+    "date": "2026-03-18"
+  },
+  {
+    "id": 5,
+    "type": "income",
+    "amount": 20000,
+    "purchase": "Основна зарплата",
+    "category": "Зарплата",
+    "date": "2026-04-01"
+  },
+  {
+    "id": 6,
+    "type": "expense",
+    "amount": 2500,
+    "purchase": "Оплата комунальних послуг",
+    "category": "Комуналка",
+    "date": "2026-04-05"
+  },
+  {
+    "id": 7,
+    "amount": 150,
+    "category": "Їжа",
+    "type": "expense",
+    "purchase": "Піца з фори",
+    "date": "2026-04-26"
+  }
+]
