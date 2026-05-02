@@ -33,7 +33,7 @@
   },
   {
     "id": 7,
-    "amount": "150",
+    "amount": 150,
     "category": "Їжа",
     "type": "expense",
     "purchase": "Піца з фори",
