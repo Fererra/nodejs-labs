@@ -1,15 +1,13 @@
-import fs from 'fs/promises';
+import fs from "fs/promises";
 
-
-//Завантаження даних з файлу за допомогою async/await
 const extractFromFileAsync = async (filePath) => {
-    try {
-        const data = await fs.readFile(filePath, "utf-8");
-        return JSON.parse(data);
-    } catch (error) {
-        console.error('Error with reading data');
-        return [];
-    }
-}
+  try {
+    const data = await fs.readFile(filePath, "utf-8");
+    return JSON.parse(data);
+  } catch (error) {
+    console.error("Error with reading data");
+    return [];
+  }
+};
 
 export default extractFromFileAsync;
