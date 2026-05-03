@@ -2,10 +2,11 @@ import { Router } from "express";
 import TransactionRepository from "../repositories/transaction.repository.js";
 import FinanceService from "../services/finance.service.js";
 import FinanceController from "../controllers/finance.controller.js";
+import pool from "../../config/database.js";
 
 const router = Router();
 
-const transaction = new TransactionRepository();
+const transaction = new TransactionRepository(pool);
 const service = new FinanceService(transaction);
 const controller = new FinanceController(service);
 
