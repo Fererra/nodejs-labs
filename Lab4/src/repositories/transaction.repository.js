@@ -33,52 +33,31 @@ class TransactionRepository {
 
   async save(dto) {
     const { amount, category, type, purchase } = dto;
+    const date = new Date().toISOString().split("T")[0];
 
-    const transactions = await extractFromFileWithPromise(this.#filePath);
-
-    const maxId = transactions.reduce(
-      (max, curr) => (curr.id > max ? curr.id : max),
-      0,
-    );
-
-    const newTransaction = {
-      id: maxId + 1,
-      amount,
-      category,
-      type,
-      purchase,
-      date: new Date().toISOString().split("T")[0],
-    };
-
-    transactions.push(newTransaction);
-
-    const data = JSON.stringify(transactions, null, 2);
-    await fs.writeFile(this.#filePath, data);
-
-    return newTransaction;
+    const rawRequest =
+      "INSERT INTO transactions (amount, purchase, category, type, date) \
+      VALUES ($1, $2, $3, $4, $5)";
+    
+    await pool.query(rawRequest, [amount, purchase, category, type, date]);
   }
 
   async update(id, dto) {
+    const { amount, category, type, purchase } = dto;
     const transactions = await extractFromFileAsync(this.#filePath);
 
-    const updatedTransactions = transactions.map((item) => {
-      if (item.id === id) {
-        return { ...item, ...dto };
-      }
-      return item;
-    });
+    const rawRequest =
+      "UPDATE transactions SET amount = $1, purchase = $2, category = $3, type = $4 \
+      WHERE id = $5";
 
-    const data = JSON.stringify(updatedTransactions, null, 2);
-    await fs.writeFile(this.#filePath, data);
+    await pool.query(rawRequest, [amount, purchase, category, type, id]);
   }
 
   async delete(id) {
-    const transactions = await extractFromFileAsync(this.#filePath);
+    const rawRequest =
+    "DELETE from transactions WHERE id = $1";
 
-    const updatedTransactions = transactions.filter((item) => item.id !== id);
-
-    const data = JSON.stringify(updatedTransactions, null, 2);
-    await fs.writeFile(this.#filePath, data);
+    await pool.query(rawRequest, [id]);
   }
 }
 
