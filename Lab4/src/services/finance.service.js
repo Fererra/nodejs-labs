@@ -1,9 +1,10 @@
+import pool from '../../config/database.js';
+
 class FinanceService {
   constructor(financeRepository) {
     this.repository = financeRepository;
   }
 
-  
   async getAllRecords(filters = {}) {
     return await this.repository.getAll();
   }
@@ -30,6 +31,29 @@ class FinanceService {
 
   async getTransactionsByPeriod(startDate, endDate) {
     return await this.repository.getByPeriod(startDate, endDate);
+  }
+
+  async replaceTransaction(oldId, newTransactionData1, newTransactionData2) {
+    const client = await pool.connect(); 
+    
+    try {
+      await client.query('BEGIN'); 
+      
+      await this.repository.delete(oldId, client);
+      await this.repository.save(newTransactionData1, client);
+      await this.repository.save(newTransactionData2, client);
+
+      await client.query('COMMIT');
+      return true;
+
+    } catch (error) {
+      await client.query('ROLLBACK');
+      console.error("Транзакцію відхилено. Зміни відкочено:", error.message);
+      throw error;
+      
+    } finally {
+      client.release();
+    }
   }
 }
 
