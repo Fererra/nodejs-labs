@@ -1,19 +1,4 @@
-import path from "path";
-import fs from "fs/promises";
-import { fileURLToPath } from "url";
-import { randomInt } from "crypto";
-import extractFromFileAsync from "./utils/get-data-async.js";
-import extractFromFileWithPromise from "./utils/get-data-promise.js";
-import extractFromFileCallback from "./utils/get-data-callback.js";
-import extractFromFileSync from "./utils/get-data-sync.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-
 class TransactionRepository {
-  #filePath;
-
   constructor(pool) {
     this.pool = pool
 
@@ -63,54 +48,58 @@ class TransactionRepository {
     }
   }
 
-  async save(dto) {
-    const { amount, category, type, purchase } = dto;
-
-    const transactions = await extractFromFileWithPromise(this.#filePath);
-
-    const maxId = transactions.reduce(
-      (max, curr) => (curr.id > max ? curr.id : max),
-      0,
-    );
-
-    const newTransaction = {
-      id: maxId + 1,
-      amount,
-      category,
-      type,
-      purchase,
-      date: new Date().toISOString().split("T")[0],
-    };
-
-    transactions.push(newTransaction);
-
-    const data = JSON.stringify(transactions, null, 2);
-    await fs.writeFile(this.#filePath, data);
-
-    return newTransaction;
+  async save(dto, client) {
+    try {
+      const db = client || this.pool
+      const { amount, category, type, purchase } = dto;
+      const date = new Date().toISOString().split("T")[0];
+      
+      const query = `
+        INSERT INTO transactions (amount, category, type, purchase, date)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING *;
+      `;
+      const values = [amount, category, type, purchase, date];
+      
+      const result = await db.query(query, values);
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error saving transaction:", error);
+      throw error;
+    }
   }
 
-  async update(id, dto) {
-    const transactions = await extractFromFileAsync(this.#filePath);
-
-    const updatedTransactions = transactions.map((item) => {
-      if (item.id === id) {
-        return { ...item, ...dto };
-      }
-      return item;
-    });
-
-    const data = JSON.stringify(updatedTransactions, null, 2);
-    await fs.writeFile(this.#filePath, data);
+  async update(id, dto, client) {
+    try {
+      const db = client || this.pool
+      const { amount, category, type, purchase, date } = dto;
+      
+      const query = `
+        UPDATE transactions 
+        SET amount = $1, category = $2, type = $3, purchase = $4, date = $5
+        WHERE id = $6
+        RETURNING *;
+      `;
+      const values = [amount, category, type, purchase, date, id];
+      
+      const result = await db.query(query, values);
+      return result.rows[0];
+    } catch (error) {
+      console.error(`Error updating transaction with id ${id}:`, error);
+      throw error;
+    }
   }
 
-  async delete(id) {
-    const transactions = await extractFromFileAsync(this.#filePath);
-
-    const updatedTransactions = transactions.filter((item) => item.id !== id);
-
-    const data = JSON.stringify(updatedTransactions, null, 2);
-    await fs.writeFile(this.#filePath, data);
+  async delete(id, client) {
+    try {
+      const db = client || this.pool
+      const query = "DELETE FROM transactions WHERE id = $1 RETURNING *;";
+      const result = await db.query(query, [id]);
+      return result.rows[0];
+    } catch (error) {
+      console.error(`Error deleting transaction with id ${id}:`, error);
+      throw error;
+    }
   }
 }
 
