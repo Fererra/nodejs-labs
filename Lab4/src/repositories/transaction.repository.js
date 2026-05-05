@@ -80,6 +80,18 @@ class TransactionRepository {
     const data = JSON.stringify(updatedTransactions, null, 2);
     await fs.writeFile(this.#filePath, data);
   }
+  async updateCategoryTransactionally(oldCategory, newCategory, client) {
+    const rawRequest = `
+      UPDATE transactions 
+      SET category = $2 
+      WHERE category = $1 
+      RETURNING id;
+    `;
+
+    const result = await client.query(rawRequest, [oldCategory, newCategory]);
+
+    return result.rowCount;
+  }
 }
 
 export default TransactionRepository;

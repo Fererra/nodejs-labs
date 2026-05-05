@@ -1,3 +1,5 @@
+import { transactionManager } from '../db/transactionManager.js';
+
 class FinanceService {
   constructor(financeRepository) {
     this.repository = financeRepository;
@@ -41,6 +43,26 @@ class FinanceService {
 
   async deleteRecord(id) {
     return await this.repository.delete(id);
+  }
+
+  async reassignCategory(oldCategory, newCategory = 'Без категорії') {
+    return await transactionManager.execute(async (client) => {
+
+      if (oldCategory.toLowerCase() === 'зарплата') {
+        throw new Error(`Відміна транзакції: системну категорію '${oldCategory}' не можна змінювати!`);
+      }
+
+      const updatedCount = await this.repository.updateCategoryTransactionally(oldCategory, newCategory, client);
+
+      if (updatedCount === 0) {
+        throw new Error(`Категорію '${oldCategory}' не знайдено, скасовуємо операцію.`);
+      }
+
+      return {
+        success: true,
+        message: `Транзакція успішна! Перенесено ${updatedCount} записів з '${oldCategory}' до '${newCategory}'.`
+      };
+    });
   }
 }
 
