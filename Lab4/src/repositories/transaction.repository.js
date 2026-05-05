@@ -10,25 +10,57 @@ import extractFromFileSync from "./utils/get-data-sync.js";
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+
 class TransactionRepository {
   #filePath;
 
-  constructor() {
-    this.#filePath = path.join(__dirname, "../data", "transactions.json");
+  constructor(pool) {
+    this.pool = pool
+
   }
 
   async getById(id) {
-    const transactions = await new Promise((res, rej) => {
-      extractFromFileCallback(this.#filePath, (err, data) => {
-        res(data);
-      });
-    });
-
-    return transactions.find((item) => item.id === id);
+    try{
+      const result = await this.pool.query("SELECT * FROM transactions WHERE id = $1", [id]);
+      return result.rows[0];      
+    }catch (error) {
+      console.error(`Error fetching transaction with id ${id}:`, error);
+      throw error;
+    }
   }
 
   async getAll() {
-    return extractFromFileSync(this.#filePath);
+    try {
+      const result = await this.pool.query("SELECT * FROM transactions");
+      return result.rows;
+    } catch (error) {
+      console.error("Error fetching transactions:", error);
+      throw error;
+    }
+  }
+
+  async filterByCategory(category) {
+    try {
+      const result = await this.pool.query("SELECT * FROM transactions WHERE category = $1", [category]);
+      return result.rows;
+    } catch (error) {
+      console.error(`Error filtering transactions by category ${category}:`, error);
+      throw error;
+    }
+  }
+
+
+  async getByPeriod(startDate, endDate) {
+    try {
+      const result = await this.pool.query(
+        "SELECT * FROM transactions WHERE date >= $1 AND date <= $2",
+        [startDate, endDate]
+      );
+      return result.rows;
+    } catch (error) {
+      console.error(`Error fetching transactions from ${startDate} to ${endDate}:`, error);
+      throw error;
+    }
   }
 
   async save(dto) {
