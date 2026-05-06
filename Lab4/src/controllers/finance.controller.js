@@ -24,14 +24,25 @@ class FinanceController {
   };
 
   getRecordById = async (req, res) => {
-    const id = Number(req.params.id);
-    const result = await this.service.getRecordById(id);
-    return res.status(200).json(result);
+    try {
+      const id = Number(req.params.id);
+      if (isNaN(id)) return res.status(400).send("Некоректний ID");
+
+      const result = await this.service.getRecordById(id);
+      if (!result) return res.status(404).send("Запис не знайдено");
+
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error("Error fetching record by ID:", error);
+      return res.status(500).send("Failed to fetch record");
+    }
   };
 
   getEditPage = async (req, res) => {
     try {
       const id = Number(req.params.id);
+      if (isNaN(id)) return res.status(400).send("Некоректний ID");
+
       const record = await this.service.getRecordById(id);
 
       if (!record) {
@@ -47,8 +58,13 @@ class FinanceController {
 
   createRecord = async (req, res) => {
     try {
+      const amount = Number(req.body.amount);
+      if (isNaN(amount) || amount <= 0) {
+        return res.status(400).send("Сума повинна бути додатнім числом");
+      }
+
       const data = {
-        amount: Number(req.body.amount),
+        amount,
         purchase: req.body.purchase,
         category: req.body.category,
         type: req.body.type,
@@ -67,9 +83,14 @@ class FinanceController {
   updateRecord = async (req, res) => {
     try {
       const id = Number(req.params.id);
+      const amount = Number(req.body.amount);
+
+      if (isNaN(id) || isNaN(amount)) {
+        return res.status(400).send("Некоректні дані");
+      }
 
       const data = {
-        amount: Number(req.body.amount),
+        amount,
         purchase: req.body.purchase,
         category: req.body.category,
         type: req.body.type,
@@ -87,6 +108,8 @@ class FinanceController {
   deleteRecord = async (req, res) => {
     try {
       const id = Number(req.params.id);
+      if (isNaN(id)) return res.status(400).send("Некоректний ID");
+      
       await this.service.deleteRecord(id);
       return res.redirect("/transactions");
     } catch (error) {
@@ -94,6 +117,22 @@ class FinanceController {
       return res
         .status(500)
         .json({ message: "Failed to delete record", error: error.message });
+    }
+  };
+
+  replaceRecord = async (req, res) => {
+    try {
+      const oldId = Number(req.params.id);
+      if (isNaN(oldId)) return res.status(400).send("Некоректний ID");
+
+      const { newTransaction1, newTransaction2 } = req.body;
+
+      await this.service.replaceTransaction(oldId, newTransaction1, newTransaction2);
+      
+      return res.status(200).json({ message: "Транзакція успішно замінена" });
+    } catch (error) {
+      console.error("Transaction failed and rolled back:", error);
+      return res.status(500).json({ message: "Помилка транзакції, зміни відкочено", error: error.message });
     }
   };
 }

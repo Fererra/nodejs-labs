@@ -19,6 +19,7 @@ router.get("/add-record-page", (req, res) => {
 });
 
 router.post("/save", controller.createRecord);
+router.post('/transactions/:id/replace', controller.replaceRecord);
 router.get("/transactions", controller.getAllRecords);
 router.get("/transaction/:id", controller.getRecordById);
 router.get("/edit/:id", controller.getEditPage);
