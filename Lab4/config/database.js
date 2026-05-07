@@ -11,7 +11,7 @@ const pool = new Pool({
 });
 
 pool.on("connect", () => {
-  console.log("Підключено до бази даних PostgreSQL");
+  console.log("Connected to PostgreSQL database");
 });
 
 export default pool;

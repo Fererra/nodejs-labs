@@ -10,31 +10,32 @@ class FinanceController {
       case "23503":
         return res.status(409).render("error", {
           statusCode: 409,
-          message: "Неможливо виконати операцію: запис пов'язаний з іншими даними",
+          message: "Cannot perform operation: record is linked to other data",
         });
 
       case "23505":
         return res.status(409).render("error", {
           statusCode: 409,
-          message: "Запис з такими даними вже існує",
+          message: "A record with these data already exists",
         });
 
       case "23514":
         return res.status(400).render("error", {
           statusCode: 400,
-          message: "Дані не відповідають обмеженням бази даних (наприклад, невірний тип транзакції)",
+          message:
+            "Data do not meet database constraints (for example, invalid transaction type)",
         });
 
       case "23502":
         return res.status(400).render("error", {
           statusCode: 400,
-          message: "Не заповнені обов'язкові поля",
+          message: "Required fields are missing",
         });
 
       default:
         return res.status(500).render("error", {
           statusCode: 500,
-          message: "Внутрішня помилка сервера",
+          message: "Internal server error",
         });
     }
   }
@@ -76,7 +77,7 @@ class FinanceController {
       if (isNaN(id)) {
         return res.status(400).render("error", {
           statusCode: 400,
-          message: "Некоректний ID",
+          message: "Invalid ID",
         });
       }
 
@@ -84,7 +85,7 @@ class FinanceController {
       if (!result) {
         return res.status(404).render("error", {
           statusCode: 404,
-          message: "Запис не знайдено",
+          message: "Record not found",
         });
       }
 
@@ -100,7 +101,7 @@ class FinanceController {
       if (isNaN(id)) {
         return res.status(400).render("error", {
           statusCode: 400,
-          message: "Некоректний ID",
+          message: "Invalid ID",
         });
       }
 
@@ -109,7 +110,7 @@ class FinanceController {
       if (!record) {
         return res.status(404).render("error", {
           statusCode: 404,
-          message: "Запис не знайдено",
+          message: "Record not found",
         });
       }
 
@@ -124,13 +125,17 @@ class FinanceController {
     }
   };
 
+  getReassignCategoryPage = (req, res) => {
+    return res.render("categories");
+  };
+
   createRecord = async (req, res) => {
     try {
       const amount = Number(req.body.amount);
       if (isNaN(amount) || amount <= 0) {
         return res.status(400).render("error", {
           statusCode: 400,
-          message: "Сума повинна бути додатнім числом",
+          message: "Amount must be a positive number",
         });
       }
 
@@ -156,7 +161,7 @@ class FinanceController {
       if (isNaN(id) || isNaN(amount)) {
         return res.status(400).render("error", {
           statusCode: 400,
-          message: "Некоректні дані",
+          message: "Invalid data",
         });
       }
 
@@ -164,7 +169,7 @@ class FinanceController {
       if (!existing) {
         return res.status(404).render("error", {
           statusCode: 404,
-          message: "Запис для оновлення не знайдено",
+          message: "Record to update not found",
         });
       }
 
@@ -173,9 +178,10 @@ class FinanceController {
         purchase: req.body.purchase,
         category: req.body.category,
         type: req.body.type,
-        date: existing.date instanceof Date
-          ? existing.date.toISOString().split("T")[0]
-          : existing.date,
+        date:
+          existing.date instanceof Date
+            ? existing.date.toISOString().split("T")[0]
+            : existing.date,
       };
 
       await this.service.updateRecord(id, data);
@@ -192,7 +198,7 @@ class FinanceController {
       if (isNaN(id)) {
         return res.status(400).render("error", {
           statusCode: 400,
-          message: "Некоректний ID",
+          message: "Invalid ID",
         });
       }
 
@@ -201,7 +207,7 @@ class FinanceController {
       if (!deleted) {
         return res.status(404).render("error", {
           statusCode: 404,
-          message: "Запис для видалення не знайдено",
+          message: "Record to delete not found",
         });
       }
 
@@ -211,62 +217,36 @@ class FinanceController {
     }
   };
 
-  replaceRecord = async (req, res) => {
+  reassignCategory = async (req, res) => {
     try {
-      const oldId = Number(req.params.id);
-      if (isNaN(oldId)) {
+      const oldCategory = req.body.oldCategory?.trim();
+      const newCategory = req.body.newCategory?.trim();
+
+      if (!oldCategory) {
         return res.status(400).render("error", {
           statusCode: 400,
-          message: "Некоректний ID",
+          message: "Old category is required",
         });
       }
 
-      const { newTransaction1, newTransaction2 } = req.body;
-
-      await this.service.replaceTransaction(
-        oldId,
-        newTransaction1,
-        newTransaction2,
+      const result = await this.service.reassignCategory(
+        oldCategory,
+        newCategory,
       );
 
-      return res.status(200).json({ message: "Транзакція успішно замінена" });
+      return res.status(200).json(result);
     } catch (error) {
-      console.error("Transaction failed and rolled back:", error);
-
       if (error.code) {
         return this._handleDbError(res, error);
       }
 
-      return res.status(500).json({
-        message: "Помилка транзакції, зміни відкочено",
-        error: error.message,
+      return res.status(400).render("error", {
+        statusCode: 400,
+        message: error.message || "Error while changing category",
       });
     }
   };
 
-  reassignCategoryTransactions = async (req, res) => {
-    try {
-      const { oldCategory, newCategory } = req.body;
-      if (!oldCategory) {
-        return res.status(400).render("error", {
-          statusCode: 400,
-          message: "Не вказано стару категорію для перенесення",
-        });
-      }
-      const result = await this.service.reassignCategory(oldCategory, newCategory);
-      return res.status(200).json(result);
-    } catch (error) {
-      console.error("Помилка під час масового перенесення категорій:", error);
-      if (error.message.includes('Відміна транзакції') || error.message.includes('не знайдено')) {
-        return res.status(400).json({ success: false, message: error.message });
-      }
-      return res.status(500).json({
-        success: false,
-        message: "Помилка транзакції, зміни відкочено",
-        error: error.message,
-      });
-    }
-  };
 }
 
 export default FinanceController;

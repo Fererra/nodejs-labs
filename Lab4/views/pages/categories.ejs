@@ -1,0 +1,39 @@
+<%- include('../page-parts/head') %> <%- include('../page-parts/header') %>
+
+<main class="container mx-auto p-4 flex-grow">
+  <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold mb-4">Заміна категорії</h2>
+    <p class="text-gray-600 mb-6">
+      Вкажіть існуючу категорію та нову назву, щоб оновити всі записи.
+    </p>
+
+    <form action="/categories/reassign" method="POST" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium">Стара категорія</label>
+        <input
+          type="text"
+          name="oldCategory"
+          required
+          class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+        />
+      </div>
+      <div>
+        <label class="block text-sm font-medium">Нова категорія</label>
+        <input
+          type="text"
+          name="newCategory"
+          placeholder="Без категорії"
+          class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+        />
+      </div>
+      <button
+        type="submit"
+        class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+      >
+        Змінити категорію
+      </button>
+    </form>
+  </div>
+</main>
+
+<%- include('../page-parts/footer') %>

@@ -1,4 +1,4 @@
-import { transactionManager } from '../db/transactionManager.js';
+import { transactionManager } from "../db/transaction-manager.js";
 
 class FinanceService {
   constructor(financeRepository) {
@@ -6,7 +6,8 @@ class FinanceService {
   }
 
   async getAllRecords(filters = {}) {
-    const hasFilters = filters.type || filters.category || filters.startDate || filters.endDate;
+    const hasFilters =
+      filters.type || filters.category || filters.startDate || filters.endDate;
     if (hasFilters) {
       return await this.repository.getFiltered(filters);
     }
@@ -29,37 +30,27 @@ class FinanceService {
     return await this.repository.delete(id);
   }
 
-  async getTransactionsByCategory(category) {
-    return await this.repository.filterByCategory(category);
-  }
-
-  async getTransactionsByPeriod(startDate, endDate) {
-    return await this.repository.getByPeriod(startDate, endDate);
-  }
-
-  async reassignCategory(oldCategory, newCategory = 'Без категорії') {
+  async reassignCategory(oldCategory, newCategory = "Uncategorized") {
     return await transactionManager.execute(async (client) => {
-      if (oldCategory.toLowerCase() === 'зарплата') {
-        throw new Error(`Відміна транзакції: системну категорію '${oldCategory}' не можна змінювати!`);
+      if (oldCategory.toLowerCase() === "зарплата") {
+        throw new Error(
+          `Transaction cancelled: system category '${oldCategory}' cannot be changed!`,
+        );
       }
-      const updatedCount = await this.repository.updateCategoryTransactionally(oldCategory, newCategory, client);
+      const updatedCount = await this.repository.updateCategoryTransactionally(
+        oldCategory,
+        newCategory,
+        client,
+      );
       if (updatedCount === 0) {
-        throw new Error(`Категорію '${oldCategory}' не знайдено, скасовуємо операцію.`);
+        throw new Error(
+          `Category '${oldCategory}' not found, rolling back operation.`,
+        );
       }
       return {
         success: true,
-        message: `Транзакція успішна! Перенесено ${updatedCount} записів.`
+        message: `Transaction successful! Moved ${updatedCount} records.`,
       };
-    });
-  }
-
-  async replaceTransaction(oldId, newTransactionData1, newTransactionData2) {
-    return await transactionManager.execute(async (client) => {
-      await this.repository.delete(oldId, client);
-      await this.repository.save(newTransactionData1, client);
-      await this.repository.save(newTransactionData2, client);
-
-      return true;
     });
   }
 }
