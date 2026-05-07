@@ -1,29 +1,16 @@
-import path from "path";
-import fs from "fs/promises";
-import { fileURLToPath } from "url";
-import { randomInt } from "crypto";
-import extractFromFileAsync from "./utils/get-data-async.js";
-import extractFromFileWithPromise from "./utils/get-data-promise.js";
-import extractFromFileCallback from "./utils/get-data-callback.js";
-import extractFromFileSync from "./utils/get-data-sync.js";
-
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-
-
 class TransactionRepository {
-  #filePath;
-
   constructor(pool) {
-    this.pool = pool
-
+    this.pool = pool;
   }
 
   async getById(id) {
-    try{
-      const result = await this.pool.query("SELECT * FROM transactions WHERE id = $1", [id]);
-      return result.rows[0];      
-    }catch (error) {
+    try {
+      const result = await this.pool.query(
+        "SELECT * FROM transactions WHERE id = $1",
+        [id],
+      );
+      return result.rows[0];
+    } catch (error) {
       console.error(`Error fetching transaction with id ${id}:`, error);
       throw error;
     }
@@ -39,78 +26,111 @@ class TransactionRepository {
     }
   }
 
-  async filterByCategory(category) {
+  async getFiltered({ type, category, startDate, endDate }) {
     try {
-      const result = await this.pool.query("SELECT * FROM transactions WHERE category = $1", [category]);
-      return result.rows;
-    } catch (error) {
-      console.error(`Error filtering transactions by category ${category}:`, error);
-      throw error;
-    }
-  }
+      let query = "SELECT * FROM transactions WHERE 1=1";
+      const values = [];
+      let i = 1;
 
-
-  async getByPeriod(startDate, endDate) {
-    try {
-      const result = await this.pool.query(
-        "SELECT * FROM transactions WHERE date >= $1 AND date <= $2",
-        [startDate, endDate]
-      );
-      return result.rows;
-    } catch (error) {
-      console.error(`Error fetching transactions from ${startDate} to ${endDate}:`, error);
-      throw error;
-    }
-  }
-
-  async save(dto) {
-    const { amount, category, type, purchase } = dto;
-
-    const transactions = await extractFromFileWithPromise(this.#filePath);
-
-    const maxId = transactions.reduce(
-      (max, curr) => (curr.id > max ? curr.id : max),
-      0,
-    );
-
-    const newTransaction = {
-      id: maxId + 1,
-      amount,
-      category,
-      type,
-      purchase,
-      date: new Date().toISOString().split("T")[0],
-    };
-
-    transactions.push(newTransaction);
-
-    const data = JSON.stringify(transactions, null, 2);
-    await fs.writeFile(this.#filePath, data);
-
-    return newTransaction;
-  }
-
-  async update(id, dto) {
-    const transactions = await extractFromFileAsync(this.#filePath);
-
-    const updatedTransactions = transactions.map((item) => {
-      if (item.id === id) {
-        return { ...item, ...dto };
+      if (type) {
+        query += ` AND type = $${i++}`;
+        values.push(type);
       }
-      return item;
-    });
+      if (category) {
+        query += ` AND category ILIKE $${i++}`;
+        values.push(`%${category}%`);
+      }
+      if (startDate) {
+        query += ` AND date >= $${i++}`;
+        values.push(startDate);
+      }
+      if (endDate) {
+        query += ` AND date <= $${i++}`;
+        values.push(endDate);
+      }
 
-    const data = JSON.stringify(updatedTransactions, null, 2);
-    await fs.writeFile(this.#filePath, data);
+      query += " ORDER BY date DESC";
+
+      const result = await this.pool.query(query, values);
+      return result.rows;
+    } catch (error) {
+      console.error("Error filtering transactions:", error);
+      throw error;
+    }
   }
 
-  async delete(id) {
-    const transactions = await extractFromFileAsync(this.#filePath);
+  async save(dto, client) {
+    try {
+      const db = client || this.pool;
+      const { amount, category, type, purchase } = dto;
+      const date = new Date().toISOString().split("T")[0];
 
-    const updatedTransactions = transactions.filter((item) => item.id !== id);
+      const query = `
+        INSERT INTO transactions (amount, category, type, purchase, date)
+        VALUES ($1, $2, $3, $4, $5)
+        RETURNING *;
+      `;
+      const values = [amount, category, type, purchase, date];
 
-    const data = JSON.stringify(updatedTransactions, null, 2);
-    await fs.writeFile(this.#filePath, data);
+      const result = await db.query(query, values);
+      return result.rows[0];
+    } catch (error) {
+      console.error("Error saving transaction:", error);
+      throw error;
+    }
+  }
+
+  async update(id, dto, client) {
+    try {
+      const db = client || this.pool;
+      const { amount, category, type, purchase, date } = dto;
+
+      const query = `
+        UPDATE transactions 
+        SET amount = $1, category = $2, type = $3, purchase = $4, date = $5
+        WHERE id = $6
+        RETURNING *;
+      `;
+      const values = [amount, category, type, purchase, date, id];
+
+      const result = await db.query(query, values);
+      return result.rows[0];
+    } catch (error) {
+      console.error(`Error updating transaction with id ${id}:`, error);
+      throw error;
+    }
+  }
+
+  async updateCategoryTransactionally(oldCategory, newCategory, client) {
+    try {
+      const db = client || this.pool;
+      const query = `
+        UPDATE transactions
+        SET category = $1
+        WHERE category = $2;
+      `;
+
+      const result = await db.query(query, [newCategory, oldCategory]);
+      return result.rowCount;
+    } catch (error) {
+      console.error(
+        `Error updating category from '${oldCategory}' to '${newCategory}':`,
+        error,
+      );
+      throw error;
+    }
+  }
+
+  async delete(id, client) {
+    try {
+      const db = client || this.pool;
+      const query = "DELETE FROM transactions WHERE id = $1 RETURNING *;";
+      const result = await db.query(query, [id]);
+      return result.rows[0];
+    } catch (error) {
+      console.error(`Error deleting transaction with id ${id}:`, error);
+      throw error;
+    }
   }
 }
 

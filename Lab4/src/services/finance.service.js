@@ -1,10 +1,16 @@
+import { transactionManager } from "../db/transaction-manager.js";
+
 class FinanceService {
   constructor(financeRepository) {
     this.repository = financeRepository;
   }
 
-  
   async getAllRecords(filters = {}) {
+    const hasFilters =
+      filters.type || filters.category || filters.startDate || filters.endDate;
+    if (hasFilters) {
+      return await this.repository.getFiltered(filters);
+    }
     return await this.repository.getAll();
   }
 
@@ -24,12 +30,28 @@ class FinanceService {
     return await this.repository.delete(id);
   }
 
-  async getTransactionsByCategory(category) {
-    return await this.repository.filterByCategory(category);
-  }
-
-  async getTransactionsByPeriod(startDate, endDate) {
-    return await this.repository.getByPeriod(startDate, endDate);
+  async reassignCategory(oldCategory, newCategory = "Uncategorized") {
+    return await transactionManager.execute(async (client) => {
+      if (oldCategory.toLowerCase() === "зарплата") {
+        throw new Error(
+          `Transaction cancelled: system category '${oldCategory}' cannot be changed!`,
+        );
+      }
+      const updatedCount = await this.repository.updateCategoryTransactionally(
+        oldCategory,
+        newCategory,
+        client,
+      );
+      if (updatedCount === 0) {
+        throw new Error(
+          `Category '${oldCategory}' not found, rolling back operation.`,
+        );
+      }
+      return {
+        success: true,
+        message: `Transaction successful! Moved ${updatedCount} records.`,
+      };
+    });
   }
 }
 

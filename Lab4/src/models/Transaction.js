@@ -3,7 +3,7 @@
  */
 class Transaction {
   /**
-   * @param {string} id - Унікальний ідентифікатор
+   * @param {number} id - Унікальний ідентифікатор
    * @param {'income' | 'expense'} type - Тип: надходження або витрата
    * @param {number} amount - Сума
    * @param {string} purchase - Назва покупки / опис надходження
