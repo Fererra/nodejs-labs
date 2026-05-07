@@ -134,6 +134,23 @@ class TransactionRepository {
       throw error;
     }
   }
+
+  async updateCategoryTransactionally(oldCategory, newCategory, client) {
+    try {
+      const db = client || this.pool;
+      const query = `
+        UPDATE transactions 
+        SET category = $2 
+        WHERE category = $1 
+        RETURNING id;
+      `;
+      const result = await db.query(query, [oldCategory, newCategory]);
+      return result.rowCount;
+    } catch (error) {
+      console.error(`Error updating category from ${oldCategory} to ${newCategory}:`, error);
+      throw error;
+    }
+  }
 }
 
 export default TransactionRepository;
