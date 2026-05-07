@@ -1,4 +1,4 @@
-import pool from '../../config/database.js';
+import { transactionManager } from '../db/transactionManager.js';
 
 class FinanceService {
   constructor(financeRepository) {
@@ -37,27 +37,30 @@ class FinanceService {
     return await this.repository.getByPeriod(startDate, endDate);
   }
 
+  async reassignCategory(oldCategory, newCategory = 'Без категорії') {
+    return await transactionManager.execute(async (client) => {
+      if (oldCategory.toLowerCase() === 'зарплата') {
+        throw new Error(`Відміна транзакції: системну категорію '${oldCategory}' не можна змінювати!`);
+      }
+      const updatedCount = await this.repository.updateCategoryTransactionally(oldCategory, newCategory, client);
+      if (updatedCount === 0) {
+        throw new Error(`Категорію '${oldCategory}' не знайдено, скасовуємо операцію.`);
+      }
+      return {
+        success: true,
+        message: `Транзакція успішна! Перенесено ${updatedCount} записів.`
+      };
+    });
+  }
+
   async replaceTransaction(oldId, newTransactionData1, newTransactionData2) {
-    const client = await pool.connect(); 
-    
-    try {
-      await client.query('BEGIN'); 
-      
+    return await transactionManager.execute(async (client) => {
       await this.repository.delete(oldId, client);
       await this.repository.save(newTransactionData1, client);
       await this.repository.save(newTransactionData2, client);
 
-      await client.query('COMMIT');
       return true;
-
-    } catch (error) {
-      await client.query('ROLLBACK');
-      console.error("Транзакцію відхилено. Зміни відкочено:", error.message);
-      throw error;
-      
-    } finally {
-      client.release();
-    }
+    });
   }
 }
 

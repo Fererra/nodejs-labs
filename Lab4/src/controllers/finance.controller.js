@@ -243,6 +243,30 @@ class FinanceController {
       });
     }
   };
+
+  reassignCategoryTransactions = async (req, res) => {
+    try {
+      const { oldCategory, newCategory } = req.body;
+      if (!oldCategory) {
+        return res.status(400).render("error", {
+          statusCode: 400,
+          message: "Не вказано стару категорію для перенесення",
+        });
+      }
+      const result = await this.service.reassignCategory(oldCategory, newCategory);
+      return res.status(200).json(result);
+    } catch (error) {
+      console.error("Помилка під час масового перенесення категорій:", error);
+      if (error.message.includes('Відміна транзакції') || error.message.includes('не знайдено')) {
+        return res.status(400).json({ success: false, message: error.message });
+      }
+      return res.status(500).json({
+        success: false,
+        message: "Помилка транзакції, зміни відкочено",
+        error: error.message,
+      });
+    }
+  };
 }
 
 export default FinanceController;
