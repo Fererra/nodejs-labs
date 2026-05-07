@@ -6,6 +6,10 @@ class FinanceService {
   }
 
   async getAllRecords(filters = {}) {
+    const hasFilters = filters.type || filters.category || filters.startDate || filters.endDate;
+    if (hasFilters) {
+      return await this.repository.getFiltered(filters);
+    }
     return await this.repository.getAll();
   }
 

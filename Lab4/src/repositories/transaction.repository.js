@@ -24,6 +24,39 @@ class TransactionRepository {
     }
   }
 
+  async getFiltered({ type, category, startDate, endDate }) {
+    try {
+      let query = "SELECT * FROM transactions WHERE 1=1";
+      const values = [];
+      let i = 1;
+
+      if (type) {
+        query += ` AND type = $${i++}`;
+        values.push(type);
+      }
+      if (category) {
+        query += ` AND category ILIKE $${i++}`;
+        values.push(`%${category}%`);
+      }
+      if (startDate) {
+        query += ` AND date >= $${i++}`;
+        values.push(startDate);
+      }
+      if (endDate) {
+        query += ` AND date <= $${i++}`;
+        values.push(endDate);
+      }
+
+      query += " ORDER BY date DESC";
+
+      const result = await this.pool.query(query, values);
+      return result.rows;
+    } catch (error) {
+      console.error("Error filtering transactions:", error);
+      throw error;
+    }
+  }
+
   async filterByCategory(category) {
     try {
       const result = await this.pool.query("SELECT * FROM transactions WHERE category = $1", [category]);
