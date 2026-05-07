@@ -25,4 +25,4 @@ export const transactionManager = {
             client.release();
         }
     }
-};
+}; // comment for push
