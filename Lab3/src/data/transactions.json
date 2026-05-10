@@ -1,42 +1,62 @@
-[
-  {
-    "id": 3,
-    "type": "expense",
-    "amount": 300,
-    "purchase": "Кава та круасан",
-    "category": "Розваги",
-    "date": "2026-03-17"
-  },
-  {
-    "id": 4,
-    "type": "expense",
-    "amount": 800,
-    "purchase": "Пальне для авто",
-    "category": "Транспорт",
-    "date": "2026-03-18"
-  },
-  {
-    "id": 5,
-    "type": "income",
-    "amount": 20000,
-    "purchase": "Основна зарплата",
-    "category": "Зарплата",
-    "date": "2026-04-01"
-  },
-  {
-    "id": 6,
-    "type": "expense",
-    "amount": 2500,
-    "purchase": "Оплата комунальних послуг",
-    "category": "Комуналка",
-    "date": "2026-04-05"
-  },
-  {
-    "id": 7,
-    "amount": 150,
-    "category": "Їжа",
-    "type": "expense",
-    "purchase": "Піца з фори",
-    "date": "2026-04-26"
-  }
-]
+{
+  "transactionTypes": [
+    { "id": 1, "name": "expense" },
+    { "id": 2, "name": "income" }
+  ],
+  "categories": [
+    { "id": 1, "name": "Розваги" },
+    { "id": 2, "name": "Транспорт" },
+    { "id": 3, "name": "Зарплата" },
+    { "id": 4, "name": "Комуналка" },
+    { "id": 5, "name": "Їжа" }
+  ],
+  "operationDates": [
+    { "id": 1, "dateValue": "2026-03-17" },
+    { "id": 2, "dateValue": "2026-03-18" },
+    { "id": 3, "dateValue": "2026-04-01" },
+    { "id": 4, "dateValue": "2026-04-05" },
+    { "id": 5, "dateValue": "2026-04-26" }
+  ],
+  "purchases": [
+    {
+      "id": 3,
+      "amount": 300,
+      "description": "Кава та круасан",
+      "typeId": 1,
+      "categoryId": 1,
+      "dateId": 1
+    },
+    {
+      "id": 4,
+      "amount": 800,
+      "description": "Пальне для авто",
+      "typeId": 1,
+      "categoryId": 2,
+      "dateId": 2
+    },
+    {
+      "id": 5,
+      "amount": 20000,
+      "description": "Основна зарплата",
+      "typeId": 2,
+      "categoryId": 3,
+      "dateId": 3
+    },
+    {
+      "id": 6,
+      "amount": 2500,
+      "description": "Оплата комунальних послуг",
+      "typeId": 1,
+      "categoryId": 4,
+      "dateId": 4
+    },
+    {
+      "id": 7,
+      "amount": 150,
+      "description": "Піца з фори",
+      "typeId": 1,
+      "categoryId": 5,
+      "dateId": 5
+    }
+  ]
+}
