@@ -1,7 +1,7 @@
 import path from "path";
 import fs from "fs/promises";
 import { fileURLToPath } from "url";
-import { randomInt } from "crypto";
+
 import extractFromFileAsync from "./utils/get-data-async.js";
 import extractFromFileWithPromise from "./utils/get-data-promise.js";
 import extractFromFileCallback from "./utils/get-data-callback.js";
@@ -17,18 +17,52 @@ class TransactionRepository {
     this.#filePath = path.join(__dirname, "../data", "transactions.json");
   }
 
-  async getById(id) {
-    const transactions = await new Promise((res, rej) => {
-      extractFromFileCallback(this.#filePath, (err, data) => {
-        res(data);
+  getAllTypes() {
+    try {
+      const db = extractFromFileSync(this.#filePath);
+      return db.transactionTypes || [];
+    } catch (error) {
+      console.error("Помилка синхронного читання:", error);
+      return [];
+    }
+  }
+
+  async getAllCategories() {
+    return new Promise((resolve, reject) => {
+      extractFromFileCallback(this.#filePath, (err, db) => {
+        if (err) {
+          console.error("Помилка читання через callback:", err);
+          return reject(err);
+        }
+        resolve(db.categories || []);
       });
     });
-
-    return transactions.find((item) => item.id === id);
   }
 
   async getAll() {
-    return extractFromFileSync(this.#filePath);
+    const db = await extractFromFileAsync(this.#filePath);
+
+    if (!db.purchases) return [];
+
+    return db.purchases.map((purchase) => {
+      const category = db.categories.find((c) => c.id === purchase.categoryId);
+      const type = db.transactionTypes.find((t) => t.id === purchase.typeId);
+      const date = db.operationDates.find((d) => d.id === purchase.dateId);
+
+      return {
+        id: purchase.id,
+        amount: purchase.amount,
+        purchase: purchase.description,
+        category: category ? category.name : "Невідомо",
+        type: type ? type.name : "Невідомо",
+        date: date ? date.dateValue : "Невідомо",
+      };
+    });
+  }
+
+  async getById(id) {
+    const allPurchases = await this.getAll();
+    return allPurchases.find((item) => item.id === id);
   }
 
   async savePurchase(dto) {
