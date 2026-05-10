@@ -10,8 +10,13 @@ const pool = new Pool({
   database: process.env.DB_NAME,
 });
 
-pool.on("connect", () => {
-  console.log("Connected to PostgreSQL database");
-});
+pool
+  .query("SELECT 1")
+  .then(() => {
+    console.log("✅ Successfully connected to the database");
+  })
+  .catch((error) => {
+    console.error("❌ Error connecting to the database:", error.message);
+  });
 
 export default pool;
