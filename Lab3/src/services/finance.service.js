@@ -2,6 +2,14 @@ class FinanceService {
   constructor(financeRepository) {
     this.repository = financeRepository;
   }
+  
+  async getAllCategories() {
+    return await this.repository.getAllCategories();
+  }
+
+  async getAllTypes() {
+    return await this.repository.getAllTypes();
+  }
 
   async getAllRecords(filters = {}) {
     let records = await this.repository.getAll();
