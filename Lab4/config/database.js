@@ -10,6 +10,8 @@ const pool = new Pool({
   database: process.env.DB_NAME,
 });
 
+await new Promise((resolve) => setTimeout(resolve, 1000));
+
 pool
   .query("SELECT 1")
   .then(() => {
