@@ -60,77 +60,65 @@ class TransactionRepository {
   }
 
   async save(dto, client) {
-    try {
-      const db = client || this.pool;
-      const { amount, category, type, purchase } = dto;
-      const date = new Date().toISOString().split("T")[0];
+    const db = client || this.pool;
+    const { amount, categoryId, typeId, dateId, purchase } = dto;
 
-      const query = `
-        INSERT INTO transactions (amount, category, type, purchase, date)
-        VALUES ($1, $2, $3, $4, $5)
-        RETURNING *;
-      `;
-      const values = [amount, category, type, purchase, date];
+    const query = `
+      INSERT INTO purchases (amount, category_id, type_id, date_id, description)
+      VALUES ($1, $2, $3, $4, $5)
+      RETURNING *;
+    `;
+    
+    const result = await db.query(query, [
+      amount,
+      categoryId,
+      typeId,
+      dateId,
+      purchase,
+    ]);
 
-      const result = await db.query(query, values);
-      return result.rows[0];
-    } catch (error) {
-      console.error("Error saving transaction:", error);
-      throw error;
-    }
+    return result.rows[0];
   }
 
   async update(id, dto, client) {
-    try {
-      const db = client || this.pool;
-      const { amount, category, type, purchase, date } = dto;
+    const db = client || this.pool;
+    const { amount, categoryId, type_id, purchase } = dto;
 
-      const query = `
-        UPDATE transactions 
-        SET amount = $1, category = $2, type = $3, purchase = $4, date = $5
-        WHERE id = $6
-        RETURNING *;
-      `;
-      const values = [amount, category, type, purchase, date, id];
+    const query = `
+      UPDATE purchases 
+      SET amount = $1, category_id = $2, type_id = $3, description = $4
+      WHERE id = $5
+      RETURNING *;
+    `;
 
-      const result = await db.query(query, values);
-      return result.rows[0];
-    } catch (error) {
-      console.error(`Error updating transaction with id ${id}:`, error);
-      throw error;
-    }
+    const result = await db.query(query, [
+      amount,
+      categoryId,
+      type_id,
+      purchase,
+      id,
+    ]);
+
+    return result.rows[0];
   }
 
-  async updateCategoryTransactionally(oldCategory, newCategory, client) {
-    try {
-      const db = client || this.pool;
-      const query = `
-        UPDATE transactions
-        SET category = $1
-        WHERE category = $2;
-      `;
+  async updatePurchaseCategory(oldCatId, newCatId, client) {
+    const db = client || this.pool;
 
-      const result = await db.query(query, [newCategory, oldCategory]);
-      return result.rowCount;
-    } catch (error) {
-      console.error(
-        `Error updating category from '${oldCategory}' to '${newCategory}':`,
-        error,
-      );
-      throw error;
-    }
+    const query = "UPDATE purchases SET category_id = $1 WHERE category_id = $2";
+    const result = await db.query(query, [newCatId, oldCatId]);
+
+    return result.rowCount;
   }
 
   async delete(id, client) {
-    try {
-      const db = client || this.pool;
-      const query = "DELETE FROM transactions WHERE id = $1 RETURNING *;";
-      const result = await db.query(query, [id]);
-      return result.rows[0];
-    } catch (error) {
-      console.error(`Error deleting transaction with id ${id}:`, error);
-      throw error;
-    }
+    const db = client || this.pool;
+
+    const result = await db.query(
+      "DELETE FROM purchases WHERE id = $1 RETURNING id", [id]
+    );
+
+    return result.rows[0];
   }
 }
 
