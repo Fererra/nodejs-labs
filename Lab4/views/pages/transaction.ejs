@@ -9,21 +9,29 @@
             <div class="flex flex-col">
                 <label class="text-sm font-medium text-gray-700">Тип</label>
                 <select name="type" class="border p-2 rounded focus:ring-2 focus:ring-blue-500">
-                    <option value="" <%= (typeof query !== 'undefined' && query.type === '') ? 'selected' : '' %>>Всі</option>
-                    <option value="income" <%= (typeof query !== 'undefined' && query.type === 'income') ? 'selected' : '' %>>Income</option>
-                    <option value="expense" <%= (typeof query !== 'undefined' && query.type === 'expense') ? 'selected' : '' %>>Expense</option>
+                                        <option value="" <%= (typeof query !== 'undefined' && !query.type) ? 'selected' : '' %>>Всі</option>
+                    <% if (typeof types !== 'undefined') { %>
+                        <% types.forEach(t => { %>
+                            <option value="<%= t.name %>" <%= (typeof query !== 'undefined' && query.type === t.name) ? 'selected' : '' %>>
+                                <%= t.name === 'income' ? 'Надходження' : 'Витрата' %>
+                            </option>
+                        <% }) %>
+                    <% } %>
                 </select>
             </div>
 
             <div class="flex flex-col">
                 <label class="text-sm font-medium text-gray-700">Категорія</label>
-                <input 
-                    type="text" 
-                    name="category" 
-                    placeholder="Наприклад: Їжа"
-                    value="<%= (typeof query !== 'undefined' && query.category) ? query.category : '' %>"
-                    class="border p-2 rounded focus:ring-2 focus:ring-blue-500"
-                >
+                <select name="category" class="border p-2 rounded focus:ring-2 focus:ring-blue-500 min-w-[150px]">
+                    <option value="" <%= (typeof query !== 'undefined' && !query.category) ? 'selected' : '' %>>Всі</option>
+                    <% if (typeof categories !== 'undefined') { %>
+                        <% categories.forEach(cat => { %>
+                            <option value="<%= cat.name %>" <%= (typeof query !== 'undefined' && query.category === cat.name) ? 'selected' : '' %>>
+                                <%= cat.name %>
+                            </option>
+                        <% }) %>
+                    <% } %>
+                </select>
             </div>
 
             <div class="flex flex-col">
@@ -79,15 +87,7 @@
                                 <%= item.amount %> грн
                             </td>
                             <td class="p-3"><%= item.purchase %></td>
-                            <td class="p-3 capitalize"><%= item.type %></td>
-                            <td class="p-3 flex items-center gap-4">
-                                <a href="/edit/<%= item.id %>" class="text-blue-500 hover:text-blue-700 text-lg" title="Редагувати">✏️</a>
-                                
-                                <form action="/delete/<%= item.id %>" method="POST" class="m-0" onsubmit="return confirm('Видалити?');">
-                                    <button type="submit" class="text-red-500 hover:text-red-700 text-lg" title="Видалити">🗑</button>
-                                </form>
-                            </td>                            
-                        </tr>
+                            <td class="p-3 capitalize"><%= item.type === 'income' ? 'Надходження' : 'Витрата' %></td>
                     <% }); %>
                 <% } else { %>
                     <tr>
