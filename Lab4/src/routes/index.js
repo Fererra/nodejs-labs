@@ -14,9 +14,7 @@ router.get("/", (req, res) => {
   res.render("index");
 });
 
-router.get("/add-record-page", (req, res) => {
-  res.render("form", { record: null });
-});
+router.get("/add-record-page", controller.getAddPage);
 
 router.get("/categories", controller.getReassignCategoryPage);
 
