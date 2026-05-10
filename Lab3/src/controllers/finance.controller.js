@@ -13,9 +13,14 @@ class FinanceController {
       };
       const records = await this.service.getAllRecords(filters);
 
+      const categories = await this.service.getAllCategories();
+      const types = await this.service.getAllTypes();
+
       return res.render("transaction", {
         transactions: records,
         query: req.query,
+        categories,
+        types,
       });
     } catch (error) {
       console.error("Error fetching all records:", error);
@@ -38,10 +43,32 @@ class FinanceController {
         return res.status(404).send("Запис не знайдено");
       }
 
-      return res.render("form", { record });
+      const categories = await this.service.getAllCategories();
+      const types = await this.service.getAllTypes();
+
+      return res.render("form", {
+        record,
+        categories,
+        types,
+      });
     } catch (error) {
       console.error("Error fetching record for edit:", error);
       return res.status(500).send("Failed to load edit page");
+    }
+  };
+
+  getAddPage = async (req, res) => {
+    try {
+      const categories = await this.service.getAllCategories();
+      const types = await this.service.getAllTypes();
+
+      return res.render("form", {
+        record: null,
+        categories,
+        types,
+      });
+    } catch (error) {
+      res.status(500).send("Error loading add record page");
     }
   };
 
