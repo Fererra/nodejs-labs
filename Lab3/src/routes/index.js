@@ -13,10 +13,7 @@ router.get("/", (req, res) => {
   res.render("index");
 });
 
-router.get("/add-record-page", (req, res) => {
-  res.render("form", { record: null });
-});
-
+router.get("/add-record-page", controller.getAddPage);
 router.post("/save", controller.createRecord);
 router.get("/transactions", controller.getAllRecords);
 router.get("/transaction/:id", controller.getRecordById);
