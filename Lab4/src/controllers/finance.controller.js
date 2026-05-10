@@ -95,6 +95,21 @@ class FinanceController {
     }
   };
 
+  getAddPage = async (req, res) => {
+    try {
+      const categories = await this.service.getAllCategories();
+      const types = await this.service.getAllTypes();
+
+      return res.render("form", {
+        record: null,
+        categories,
+        types,
+      });
+    } catch (error) {
+      return this._handleDbError(res, error);
+    }
+  };
+
   getEditPage = async (req, res) => {
     try {
       const id = Number(req.params.id);
@@ -229,24 +244,19 @@ class FinanceController {
         });
       }
 
-      const result = await this.service.reassignCategory(
-        oldCategory,
-        newCategory,
-      );
+      await this.service.reassignCategory(oldCategory, newCategory);
 
-      return res.status(200).json(result);
+      return res.redirect("/transactions");
     } catch (error) {
       if (error.code) {
         return this._handleDbError(res, error);
       }
-
       return res.status(400).render("error", {
         statusCode: 400,
         message: error.message || "Error while changing category",
       });
     }
   };
-
 }
 
 export default FinanceController;
