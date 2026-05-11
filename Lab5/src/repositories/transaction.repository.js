@@ -1,5 +1,8 @@
 import { Op } from "sequelize";
 import { Transaction, Category, TransactionType, OperationDate } from "../models/index.js";
+import Transaction from "../models/Transaction.js";
+import Category from "../models/Category.js";
+import OperationDate from "../models/OperationDate.js"
 
 class TransactionRepository {
   constructor(pool) {
@@ -17,31 +20,15 @@ class TransactionRepository {
       date: record.OperationDate?.dateValue || "Невідомо",
     };
   };
-
-  async findOrCreateCategory(name, client) {
-    const db = client || this.pool;
-    const findQuery = "SELECT id FROM categories WHERE name = $1";
-    const res = await db.query(findQuery, [name]);
-
-    if (res.rows.length > 0) return res.rows[0].id;
-
-    const insertQuery =
-      "INSERT INTO categories (name) VALUES ($1) RETURNING id";
-    const newCat = await db.query(insertQuery, [name]);
-    return newCat.rows[0].id;
+  
+  async findOrCreateCategory(name, tx) {
+    const [category] = await Category.findOrCreate({ where: { name }, transaction: tx });
+    return category.id;
   }
 
-  async findOrCreateDate(dateValue, client) {
-    const db = client || this.pool;
-    const findQuery = "SELECT id FROM operation_dates WHERE date_value = $1";
-    const res = await db.query(findQuery, [dateValue]);
-
-    if (res.rows.length > 0) return res.rows[0].id;
-
-    const insertQuery =
-      "INSERT INTO operation_dates (date_value) VALUES ($1) RETURNING id";
-    const newDate = await db.query(insertQuery, [dateValue]);
-    return newDate.rows[0].id;
+  async findOrCreateDate(dateValue, tx) {
+    const [date] = await OperationDate.findOrCreate({ where: { dateValue }, transaction: tx });
+    return date.id;
   }
 
   async getTypeIdByName(name) {
@@ -124,66 +111,43 @@ class TransactionRepository {
     }
   }
 
-  async save(dto, client) {
-    const db = client || this.pool;
+  async save(dto, tx) {
     const { amount, categoryId, typeId, dateId, purchase } = dto;
 
-    const query = `
-      INSERT INTO purchases (amount, category_id, type_id, date_id, description)
-      VALUES ($1, $2, $3, $4, $5)
-      RETURNING *;
-    `;
-    
-    const result = await db.query(query, [
-      amount,
-      categoryId,
-      typeId,
-      dateId,
-      purchase,
-    ]);
-
-    return result.rows[0];
-  }
-
-  async update(id, dto, client) {
-    const db = client || this.pool;
-    const { amount, categoryId, type_id, purchase } = dto;
-
-    const query = `
-      UPDATE purchases 
-      SET amount = $1, category_id = $2, type_id = $3, description = $4
-      WHERE id = $5
-      RETURNING *;
-    `;
-
-    const result = await db.query(query, [
-      amount,
-      categoryId,
-      type_id,
-      purchase,
-      id,
-    ]);
-
-    return result.rows[0];
-  }
-
-  async updatePurchaseCategory(oldCatId, newCatId, client) {
-    const db = client || this.pool;
-
-    const query = "UPDATE purchases SET category_id = $1 WHERE category_id = $2";
-    const result = await db.query(query, [newCatId, oldCatId]);
-
-    return result.rowCount;
-  }
-
-  async delete(id, client) {
-    const db = client || this.pool;
-
-    const result = await db.query(
-      "DELETE FROM purchases WHERE id = $1 RETURNING id", [id]
+    const purchase = await Purchase.create(
+      { amount, purchase, categoryId, typeId, dateId},
+      { transaction: tx}
     );
 
-    return result.rows[0];
+    return purchase;
+  }
+
+  async update(id, dto, tx) {
+    const { amount, categoryId, type_id, purchase } = dto;
+
+    const updated = await Transaction.update(
+      { amount, purchase, categoryId, typeId },
+      { where: { id }, transaction: tx }
+    );
+
+    return updated;
+  }
+
+  async updatePurchaseCategory(oldCatId, newCatId, tx) {
+    const [amount] = await Transaction.update(
+      { categoryId: newCatId },
+      { where: { categoryId: oldCatId }, transaction: tx }
+    );
+
+    return amount;
+  }
+
+  async delete(id, tx) {
+    const amount = await Transaction.destroy(
+      { where: { id }, transaction: tx }
+    );
+
+    return amount;
   }
 }
 
