@@ -51,7 +51,7 @@ class FinanceController {
     }));
   }
 
-  getAllRecords = async (req, res) => {
+    getAllRecords = async (req, res) => {
     try {
       const filters = {
         type: req.query.type || undefined,
@@ -62,9 +62,14 @@ class FinanceController {
 
       const records = await this.service.getAllRecords(filters);
 
+      const categories = await this.service.getAllCategories();
+      const types = await this.service.getAllTypes();
+
       return res.render("transaction", {
         transactions: this._formatRecords(records),
         query: req.query,
+        categories,
+        types,
       });
     } catch (error) {
       return this._handleDbError(res, error);
@@ -134,14 +139,26 @@ class FinanceController {
       }
       record.amount = Number(record.amount);
 
-      return res.render("form", { record });
+      const categories = await this.service.getAllCategories();
+      const types = await this.service.getAllTypes();
+
+      return res.render("form", {
+        record,
+        categories,
+        types,
+      });
     } catch (error) {
       return this._handleDbError(res, error);
     }
   };
 
-  getReassignCategoryPage = (req, res) => {
-    return res.render("categories");
+  getReassignCategoryPage = async (req, res) => {
+    try {
+      const categories = await this.service.getAllCategories();
+      return res.render("categories", { categories });
+    } catch (error) {
+      return this._handleDbError(res, error);
+    }
   };
 
   createRecord = async (req, res) => {
