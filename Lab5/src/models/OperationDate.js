@@ -1,5 +1,5 @@
 import { Model, DataTypes } from 'sequelize';
-import sequelize from '../../config/database.js'; // Імпорт від Студента 1
+import sequelize from '../../config/database.js';
 
 class OperationDate extends Model {}
 
@@ -10,7 +10,7 @@ OperationDate.init({
     autoIncrement: true
   },
   fullDate: {
-    type: DataTypes.DATEONLY, // YYYY-MM-DD
+    type: DataTypes.DATEONLY,
     allowNull: false,
     unique: true
   }
