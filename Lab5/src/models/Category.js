@@ -14,7 +14,8 @@ Category.init({
     allowNull: false,
     unique: true,
     validate: {
-      notEmpty: true
+      notEmpty: { msg: "Назва категорії не може бути порожньою" },
+    len: [2, 50]
     }
   }
 }, {
