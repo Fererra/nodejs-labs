@@ -1,13 +1,27 @@
-class Transaction {
-  constructor(id, amount, description, typeId, categoryId, dateId) {
-    this.id = id;
-    this.amount = amount;
-    this.description = description;
+import { Model, DataTypes } from 'sequelize';
+import sequelize from '../../config/database.js';
 
-    this.typeId = typeId;
-    this.categoryId = categoryId;
-    this.dateId = dateId;
+class Transaction extends Model {}
+
+Transaction.init({
+  id: {
+    type: DataTypes.INTEGER,
+    primaryKey: true,
+    autoIncrement: true
+  },
+  amount: {
+    type: DataTypes.DECIMAL(10, 2),
+    allowNull: false
+  },
+  description: {
+    type: DataTypes.STRING,
+    allowNull: true 
   }
-}
+}, {
+  sequelize,
+  modelName: 'Transaction',
+  tableName: 'transactions',
+  timestamps: true
+});
 
-export { Category, OperationDate, TransactionType, Transaction };
+export default Transaction;

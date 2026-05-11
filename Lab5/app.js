@@ -4,6 +4,7 @@ import { fileURLToPath } from "url";
 
 import indexRouter from "./src/routes/index.js";
 import sequelize from "./config/database.js";
+import "./src/models/index.js";
 
 const app = express();
 const PORT = process.env.PORT || 3000;
