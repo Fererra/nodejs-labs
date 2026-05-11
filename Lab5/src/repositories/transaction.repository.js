@@ -1,7 +1,22 @@
+import { Op } from "sequelize";
+import { Transaction, Category, TransactionType, OperationDate } from "../models/index.js";
+
 class TransactionRepository {
   constructor(pool) {
     this.pool = pool;
   }
+
+  #mapToDTO = (record) => {
+    if (!record) return null;
+    return {
+      id: record.id,
+      amount: record.amount,
+      purchase: record.description, // У БД description, фронт чекає purchase
+      category: record.Category?.name || "Невідомо",
+      type: record.TransactionType?.name || "Невідомо",
+      date: record.OperationDate?.dateValue || "Невідомо",
+    };
+  };
 
   async findOrCreateCategory(name, client) {
     const db = client || this.pool;
@@ -29,97 +44,82 @@ class TransactionRepository {
     return newDate.rows[0].id;
   }
 
-  async getTypeIdByName(name, client) {
-    const db = client || this.pool;
-    const res = await db.query(
-      "SELECT id FROM transaction_types WHERE name = $1",
-      [name],
-    );
-    if (res.rows.length === 0) throw new Error(`Type ${name} not found`);
-    return res.rows[0].id;
+  async getTypeIdByName(name) {
+    const type = await TransactionType.findOne({ where: { name } });
+    if (!type) throw new Error(`Type ${name} not found`);
+    return type.id;
   }
 
   async getAllCategories() {
-    const res = await this.pool.query(
-      "SELECT * FROM categories ORDER BY name ASC",
-    );
-    return res.rows;
+    const categories = await Category.findAll({ order: [['name', 'ASC']] });
+    return categories.map(c => c.toJSON());
   }
 
   async getAllTypes() {
-    const res = await this.pool.query("SELECT * FROM transaction_types");
-    return res.rows;
+    const types = await TransactionType.findAll();
+    return types.map(t => t.toJSON());
   }
 
-  async getCategoryByName(name, client) {
-    const db = client || this.pool;
-    const res = await db.query("SELECT * FROM categories WHERE name = $1", [
-      name,
-    ]);
-    return res.rows[0];
-  }
-
-  #getBaseSelect() {
-    return `
-      SELECT p.id, p.amount, p.description as purchase, 
-             c.name as category, t.name as type, d.date_value as date
-      FROM purchases p
-      JOIN categories c ON p.category_id = c.id
-      JOIN transaction_types t ON p.type_id = t.id
-      JOIN operation_dates d ON p.date_id = d.id
-    `;
+  async getCategoryByName(name) {
+    const category = await Category.findOne({ where: { name } });
+    return category ? category.toJSON() : null;
   }
 
   async getAll() {
     try {
-      const query = this.#getBaseSelect() + " ORDER BY d.date_value DESC";
-      const result = await this.pool.query(query);
-      return result.rows;
+      const records = await Transaction.findAll({
+        include: [Category, TransactionType, OperationDate],
+        order: [[OperationDate, 'dateValue', 'DESC']]
+      });
+      return records.map(this.#mapToDTO);
     } catch (error) {
-      console.error("Error fetching transactions:", error);
+      console.error("Error fetching transactions via Sequelize:", error);
       throw error;
     }
   }
 
   async getById(id) {
     try {
-      const query = this.#getBaseSelect() + " WHERE p.id = $1";
-      const result = await this.pool.query(query, [id]);
-      return result.rows[0];
+      const record = await Transaction.findByPk(id, {
+        include: [Category, TransactionType, OperationDate]
+      });
+      return this.#mapToDTO(record);
     } catch (error) {
-      console.error(`Error fetching transaction ${id}:`, error);
+      console.error(`Error fetching transaction ${id} via Sequelize:`, error);
       throw error;
     }
   }
 
   async getFiltered({ type, category, startDate, endDate }) {
     try {
-      let query = this.#getBaseSelect() + " WHERE 1=1";
-      const values = [];
-      let i = 1;
+      const includeClause = [
+        {
+          model: TransactionType,
+          where: type ? { name: type } : undefined
+        },
+        {
+          model: Category,
+          where: category ? { name: { [Op.iLike]: `%${category}%` } } : undefined
+        },
+        {
+          model: OperationDate,
+          where: (startDate || endDate) ? {
+            dateValue: {
+              ...(startDate && { [Op.gte]: startDate }),
+              ...(endDate && { [Op.lte]: endDate })
+            }
+          } : undefined
+        }
+      ];
 
-      if (type) {
-        query += ` AND t.name = $${i++}`;
-        values.push(type);
-      }
-      if (category) {
-        query += ` AND c.name ILIKE $${i++}`;
-        values.push(`%${category}%`);
-      }
-      if (startDate) {
-        query += ` AND d.date_value >= $${i++}`;
-        values.push(startDate);
-      }
-      if (endDate) {
-        query += ` AND d.date_value <= $${i++}`;
-        values.push(endDate);
-      }
+      const records = await Transaction.findAll({
+        include: includeClause,
+        order: [[OperationDate, 'dateValue', 'DESC']]
+      });
 
-      query += " ORDER BY d.date_value DESC";
-      const result = await this.pool.query(query, values);
-      return result.rows;
+      return records.map(this.#mapToDTO);
     } catch (error) {
-      console.error("Error filtering transactions:", error);
+      console.error("Error filtering transactions via Sequelize:", error);
       throw error;
     }
   }
