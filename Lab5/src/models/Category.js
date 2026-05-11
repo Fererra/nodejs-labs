@@ -25,4 +25,4 @@ Category.init({
   timestamps: false
 });
 
-export default Category;
+export default Category; //.
