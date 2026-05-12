@@ -84,7 +84,7 @@ class FinanceService {
     return await transactionManager.execute(async (t) => {
       if (oldCategoryName.toLowerCase() === "зарплата") {
         throw new Error(
-          `Transaction cancelled: system category '${oldCategoryName}' cannot be changed!`,
+          `System category '${oldCategoryName}' cannot be deleted!`,
         );
       }
 
@@ -101,16 +101,22 @@ class FinanceService {
         t,
       );
 
-      const updatedCount = await this.repository.updatePurchaseCategory(
-        oldCat.id,
-        newCatId,
-        t,
-      );
+      if (oldCat.id !== newCatId) {
+        const updatedCount = await this.repository.updatePurchaseCategory(
+          oldCat.id,
+          newCatId,
+          t,
+        );
 
-      return {
-        success: true,
-        message: `Transaction successful! Moved ${updatedCount} records from '${oldCategoryName}' to '${newCategoryName}'.`,
-      };
+        await this.repository.deleteCategoryById(oldCat.id, t);
+
+        return {
+          success: true,
+          message: `Moved ${updatedCount} records and deleted old category '${oldCategoryName}'.`,
+        };
+      }
+
+      return { success: true, message: "Nothing to change." };
     });
   }
 }

@@ -56,6 +56,10 @@ class TransactionRepository {
     return category ? category.toJSON() : null;
   }
 
+  async deleteCategoryById(id, tx) {
+    return await Category.destroy({ where: { id }, transaction: tx });
+  }
+
   async getAll() {
     try {
       const records = await Transaction.findAll({

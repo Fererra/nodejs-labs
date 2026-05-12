@@ -257,6 +257,13 @@ class FinanceController {
         });
       }
 
+      if (!newCategory) {
+        return res.status(400).render("error", {
+          statusCode: 400,
+          message: "New category is required",
+        });
+      }
+
       await this.service.reassignCategory(oldCategory, newCategory);
       return res.redirect("/transactions");
     } catch (error) {
