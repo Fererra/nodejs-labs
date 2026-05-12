@@ -4,6 +4,8 @@ class FinanceController {
   }
 
   _handleDbError(res, error) {
+    console.error("Database error:", error.name, error.message);
+
     if (error.name === "SequelizeForeignKeyConstraintError") {
       return res.status(409).render("error", {
         statusCode: 409,
@@ -43,10 +45,13 @@ class FinanceController {
   }
 
   _formatRecords(rows) {
-    return rows.map((row) => ({
-      ...row,
-      amount: Number(row.amount),
-    }));
+    return rows.map((row) => {
+      const plainRow = row.toJSON ? row.toJSON() : row;
+      return {
+        ...plainRow,
+        amount: Number(plainRow.amount),
+      };
+    });
   }
 
   getAllRecords = async (req, res) => {
@@ -60,9 +65,14 @@ class FinanceController {
 
       const records = await this.service.getAllRecords(filters);
 
+      const categories = await this.service.getAllCategories();
+      const types = await this.service.getAllTypes();
+
       return res.render("transaction", {
         transactions: this._formatRecords(records),
         query: req.query,
+        categories,
+        types,
       });
     } catch (error) {
       return this._handleDbError(res, error);
@@ -127,16 +137,29 @@ class FinanceController {
         });
       }
 
-      record.amount = Number(record.amount);
+      const plainRecord = record.toJSON ? record.toJSON() : record;
+      plainRecord.amount = Number(plainRecord.amount);
 
-      return res.render("form", { record });
+      const categories = await this.service.getAllCategories();
+      const types = await this.service.getAllTypes();
+
+      return res.render("form", {
+        record: plainRecord,
+        categories,
+        types,
+      });
     } catch (error) {
       return this._handleDbError(res, error);
     }
   };
 
-  getReassignCategoryPage = (req, res) => {
-    return res.render("categories");
+  getReassignCategoryPage = async (req, res) => {
+    try {
+      const categories = await this.service.getAllCategories();
+      return res.render("categories", { categories });
+    } catch (error) {
+      return this._handleDbError(res, error);
+    }
   };
 
   createRecord = async (req, res) => {
@@ -191,7 +214,6 @@ class FinanceController {
       };
 
       await this.service.updateRecord(id, data);
-
       return res.redirect("/transactions");
     } catch (error) {
       return this._handleDbError(res, error);
@@ -236,7 +258,6 @@ class FinanceController {
       }
 
       await this.service.reassignCategory(oldCategory, newCategory);
-
       return res.redirect("/transactions");
     } catch (error) {
       if (error.name) {
