@@ -4,49 +4,47 @@ class FinanceController {
   }
 
   _handleDbError(res, error) {
-    console.error("Database error:", error.message);
-
-    switch (error.code) {
-      case "23503":
-        return res.status(409).render("error", {
-          statusCode: 409,
-          message: "Cannot perform operation: record is linked to other data",
-        });
-
-      case "23505":
-        return res.status(409).render("error", {
-          statusCode: 409,
-          message: "A record with these data already exists",
-        });
-
-      case "23514":
-        return res.status(400).render("error", {
-          statusCode: 400,
-          message:
-            "Data do not meet database constraints (for example, invalid transaction type)",
-        });
-
-      case "23502":
-        return res.status(400).render("error", {
-          statusCode: 400,
-          message: "Required fields are missing",
-        });
-
-      default:
-        return res.status(500).render("error", {
-          statusCode: 500,
-          message: "Internal server error",
-        });
+    if (error.name === "SequelizeForeignKeyConstraintError") {
+      return res.status(409).render("error", {
+        statusCode: 409,
+        message: "Cannot perform operation: record is linked to other data",
+      });
     }
+
+    if (error.name === "SequelizeUniqueConstraintError") {
+      return res.status(409).render("error", {
+        statusCode: 409,
+        message: "A record with these data already exists",
+      });
+    }
+
+    if (error.name === "SequelizeValidationError") {
+      return res.status(400).render("error", {
+        statusCode: 400,
+        message: "Data do not meet database constraints",
+      });
+    }
+
+    if (
+      error.name === "SequelizeDatabaseError" &&
+      error.parent &&
+      error.parent.code === "23502"
+    ) {
+      return res.status(400).render("error", {
+        statusCode: 400,
+        message: "Required fields are missing",
+      });
+    }
+
+    return res.status(500).render("error", {
+      statusCode: 500,
+      message: "Internal server error",
+    });
   }
 
   _formatRecords(rows) {
     return rows.map((row) => ({
       ...row,
-      date:
-        row.date instanceof Date
-          ? row.date.toISOString().split("T")[0]
-          : row.date,
       amount: Number(row.amount),
     }));
   }
@@ -129,9 +127,6 @@ class FinanceController {
         });
       }
 
-      if (record.date instanceof Date) {
-        record.date = record.date.toISOString().split("T")[0];
-      }
       record.amount = Number(record.amount);
 
       return res.render("form", { record });
@@ -193,10 +188,6 @@ class FinanceController {
         purchase: req.body.purchase,
         category: req.body.category,
         type: req.body.type,
-        date:
-          existing.date instanceof Date
-            ? existing.date.toISOString().split("T")[0]
-            : existing.date,
       };
 
       await this.service.updateRecord(id, data);
@@ -248,7 +239,7 @@ class FinanceController {
 
       return res.redirect("/transactions");
     } catch (error) {
-      if (error.code) {
+      if (error.name) {
         return this._handleDbError(res, error);
       }
       return res.status(400).render("error", {
