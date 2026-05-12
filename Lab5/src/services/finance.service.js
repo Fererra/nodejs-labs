@@ -27,18 +27,18 @@ class FinanceService {
   }
 
   async createRecord(data) {
-    return await transactionManager.execute(async (client) => {
+    return await transactionManager.execute(async (t) => {
       const categoryId = await this.repository.findOrCreateCategory(
           data.category,
-          client,
+          t,
       );
 
       const dateId = await this.repository.findOrCreateDate(
           new Date().toISOString().split("T")[0],
-          client,
+          t,
       );
 
-      const typeId = await this.repository.getTypeIdByName(data.type, client);
+      const typeId = await this.repository.getTypeIdByName(data.type, t);
 
       return await this.repository.save(
           {
@@ -48,18 +48,18 @@ class FinanceService {
             typeId,
             dateId,
           },
-          client,
+          t,
       );
     });
   }
 
   async updateRecord(id, data) {
-    return await transactionManager.execute(async (client) => {
+    return await transactionManager.execute(async (t) => {
       const categoryId = await this.repository.findOrCreateCategory(
           data.category,
-          client,
+          t,
       );
-      const typeId = await this.repository.getTypeIdByName(data.type, client);
+      const typeId = await this.repository.getTypeIdByName(data.type, t);
 
       return await this.repository.update(
           id,
@@ -69,7 +69,7 @@ class FinanceService {
             categoryId,
             type_id: typeId,
           },
-          client,
+          t,
       );
     });
   }
@@ -79,7 +79,7 @@ class FinanceService {
   }
 
   async reassignCategory(oldCategoryName, newCategoryName = "Uncategorized") {
-    return await transactionManager.execute(async (client) => {
+    return await transactionManager.execute(async (t) => {
       if (oldCategoryName.toLowerCase() === "зарплата") {
         throw new Error(
             `Transaction cancelled: system category '${oldCategoryName}' cannot be changed!`,
@@ -88,7 +88,7 @@ class FinanceService {
 
       const oldCat = await this.repository.getCategoryByName(
           oldCategoryName,
-          client,
+          t,
       );
       if (!oldCat) {
         throw new Error(`Category '${oldCategoryName}' not found.`);
@@ -96,13 +96,13 @@ class FinanceService {
 
       const newCatId = await this.repository.findOrCreateCategory(
           newCategoryName,
-          client,
+          t,
       );
 
       const updatedCount = await this.repository.updatePurchaseCategory(
           oldCat.id,
           newCatId,
-          client,
+          t,
       );
 
       return {

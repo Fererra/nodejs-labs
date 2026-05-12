@@ -1,28 +1,24 @@
-import pool from "../../config/database.js";
+import sequelize from "../../config/database.js";
 
 export const transactionManager = {
   /**
-   * Виконує набір операцій всередині однієї SQL-транзакції.
+   * Виконує набір операцій всередині однієї Sequelize-транзакції.
    * @param {Function} callback - Функція, що містить логіку транзакції.
-   *                              Отримує client як аргумент.
+   *                              Отримує об'єкт транзакції Sequelize як аргумент.
    */
   async execute(callback) {
-    const client = await pool.connect();
+    const t = await sequelize.transaction();
 
     try {
-      await client.query("BEGIN");
+      const result = await callback(t);
 
-      const result = await callback(client);
-
-      await client.query("COMMIT");
+      await t.commit();
 
       return result;
     } catch (error) {
-      await client.query("ROLLBACK");
+      await t.rollback();
       console.error("Transaction rolled back due to error:", error);
       throw error;
-    } finally {
-      client.release();
     }
   },
 };
