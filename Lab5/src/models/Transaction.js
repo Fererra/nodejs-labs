@@ -1,27 +1,45 @@
-import { Model, DataTypes } from 'sequelize';
-import sequelize from '../../config/database.js';
+import { Model, DataTypes } from "sequelize";
+import sequelize from "../../config/database.js";
 
 class Transaction extends Model {}
 
-Transaction.init({
-  id: {
-    type: DataTypes.INTEGER,
-    primaryKey: true,
-    autoIncrement: true
+Transaction.init(
+  {
+    id: {
+      type: DataTypes.INTEGER,
+      primaryKey: true,
+      autoIncrement: true,
+    },
+    amount: {
+      type: DataTypes.DECIMAL(10, 2),
+      allowNull: false,
+    },
+    description: {
+      type: DataTypes.STRING,
+      allowNull: false,
+    },
+    categoryId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      field: "category_id",
+    },
+    typeId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      field: "type_id",
+    },
+    dateId: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+      field: "date_id",
+    },
   },
-  amount: {
-    type: DataTypes.DECIMAL(10, 2),
-    allowNull: false
+  {
+    sequelize,
+    modelName: "Transaction",
+    tableName: "transactions",
+    timestamps: false,
   },
-  description: {
-    type: DataTypes.STRING,
-    allowNull: true 
-  }
-}, {
-  sequelize,
-  modelName: 'Transaction',
-  tableName: 'transactions',
-  timestamps: true
-});
+);
 
 export default Transaction;
