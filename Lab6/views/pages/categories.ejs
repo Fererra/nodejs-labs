@@ -1,0 +1,48 @@
+<%- include('../page-parts/head') %> <%- include('../page-parts/header') %>
+
+<main class="container mx-auto p-4 flex-grow">
+  <div class="max-w-md mx-auto bg-white p-6 rounded-lg shadow-md">
+    <h2 class="text-2xl font-bold mb-4">Заміна категорії</h2>
+    <p class="text-gray-600 mb-6">
+      Оберіть існуючу категорію та вкажіть нову назву. Усі пов'язані записи будуть оновлені автоматично.
+    </p>
+
+    <form action="/categories/reassign" method="POST" class="space-y-4">
+      <div>
+        <label class="block text-sm font-medium">Стара категорія</label>
+        <select 
+          name="oldCategory" 
+          required 
+          class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+        >
+          <option value="" disabled selected>Оберіть категорію для заміни...</option>
+          <% if (typeof categories !== 'undefined') { %>
+            <% categories.forEach(cat => { %>
+              <option value="<%= cat.name %>"><%= cat.name %></option>
+            <% }) %>
+          <% } %>
+        </select>
+      </div>
+
+      <div>
+        <label class="block text-sm font-medium">Нова категорія (назва)</label>
+        <input
+          type="text"
+          name="newCategory"
+          placeholder="Наприклад: Продукти харчування"
+          required
+          class="w-full border rounded p-2 focus:ring-2 focus:ring-blue-500 outline-none"
+        />
+      </div>
+
+      <button
+        type="submit"
+        class="w-full bg-blue-600 text-white py-2 rounded hover:bg-blue-700 transition"
+      >
+        Оновити всі записи
+      </button>
+    </form>
+  </div>
+</main>
+
+<%- include('../page-parts/footer') %>
