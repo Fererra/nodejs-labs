@@ -1,33 +1,37 @@
 import { Op } from "sequelize";
-import { Transaction, Category, TransactionType, OperationDate } from "../models/index.js";
-import Transaction from "../models/Transaction.js";
-import Category from "../models/Category.js";
-import OperationDate from "../models/OperationDate.js"
+import {
+  Transaction,
+  Category,
+  TransactionType,
+  OperationDate,
+} from "../models/index.js";
 
 class TransactionRepository {
-  constructor(pool) {
-    this.pool = pool;
-  }
-
   #mapToDTO = (record) => {
     if (!record) return null;
     return {
       id: record.id,
-      amount: record.amount,
-      purchase: record.description, // У БД description, фронт чекає purchase
+      amount: Number(record.amount),
+      purchase: record.description,
       category: record.Category?.name || "Невідомо",
       type: record.TransactionType?.name || "Невідомо",
       date: record.OperationDate?.dateValue || "Невідомо",
     };
   };
-  
+
   async findOrCreateCategory(name, tx) {
-    const [category] = await Category.findOrCreate({ where: { name }, transaction: tx });
+    const [category] = await Category.findOrCreate({
+      where: { name },
+      transaction: tx,
+    });
     return category.id;
   }
 
   async findOrCreateDate(dateValue, tx) {
-    const [date] = await OperationDate.findOrCreate({ where: { dateValue }, transaction: tx });
+    const [date] = await OperationDate.findOrCreate({
+      where: { dateValue },
+      transaction: tx,
+    });
     return date.id;
   }
 
@@ -38,13 +42,13 @@ class TransactionRepository {
   }
 
   async getAllCategories() {
-    const categories = await Category.findAll({ order: [['name', 'ASC']] });
-    return categories.map(c => c.toJSON());
+    const categories = await Category.findAll({ order: [["name", "ASC"]] });
+    return categories.map((c) => c.toJSON());
   }
 
   async getAllTypes() {
     const types = await TransactionType.findAll();
-    return types.map(t => t.toJSON());
+    return types.map((t) => t.toJSON());
   }
 
   async getCategoryByName(name) {
@@ -56,7 +60,7 @@ class TransactionRepository {
     try {
       const records = await Transaction.findAll({
         include: [Category, TransactionType, OperationDate],
-        order: [[OperationDate, 'dateValue', 'DESC']]
+        order: [[OperationDate, "dateValue", "DESC"]],
       });
       return records.map(this.#mapToDTO);
     } catch (error) {
@@ -68,7 +72,7 @@ class TransactionRepository {
   async getById(id) {
     try {
       const record = await Transaction.findByPk(id, {
-        include: [Category, TransactionType, OperationDate]
+        include: [Category, TransactionType, OperationDate],
       });
       return this.#mapToDTO(record);
     } catch (error) {
@@ -82,26 +86,31 @@ class TransactionRepository {
       const includeClause = [
         {
           model: TransactionType,
-          where: type ? { name: type } : undefined
+          where: type ? { name: type } : undefined,
         },
         {
           model: Category,
-          where: category ? { name: { [Op.iLike]: `%${category}%` } } : undefined
+          where: category
+            ? { name: { [Op.iLike]: `%${category}%` } }
+            : undefined,
         },
         {
           model: OperationDate,
-          where: (startDate || endDate) ? {
-            dateValue: {
-              ...(startDate && { [Op.gte]: startDate }),
-              ...(endDate && { [Op.lte]: endDate })
-            }
-          } : undefined
-        }
+          where:
+            startDate || endDate
+              ? {
+                  dateValue: {
+                    ...(startDate && { [Op.gte]: startDate }),
+                    ...(endDate && { [Op.lte]: endDate }),
+                  },
+                }
+              : undefined,
+        },
       ];
 
       const records = await Transaction.findAll({
         include: includeClause,
-        order: [[OperationDate, 'dateValue', 'DESC']]
+        order: [[OperationDate, "dateValue", "DESC"]],
       });
 
       return records.map(this.#mapToDTO);
@@ -114,40 +123,41 @@ class TransactionRepository {
   async save(dto, tx) {
     const { amount, categoryId, typeId, dateId, purchase } = dto;
 
-    const purchase = await Purchase.create(
-      { amount, purchase, categoryId, typeId, dateId},
-      { transaction: tx}
+    const newRecord = await Transaction.create(
+      { amount, description: purchase, categoryId, typeId, dateId },
+      { transaction: tx },
     );
 
-    return purchase;
+    return newRecord;
   }
 
   async update(id, dto, tx) {
-    const { amount, categoryId, type_id, purchase } = dto;
+    const { amount, categoryId, typeId, purchase } = dto;
 
-    const updated = await Transaction.update(
-      { amount, purchase, categoryId, typeId },
-      { where: { id }, transaction: tx }
+    const [updatedCount] = await Transaction.update(
+      { amount, description: purchase, categoryId, typeId },
+      { where: { id }, transaction: tx },
     );
 
-    return updated;
+    return updatedCount;
   }
 
   async updatePurchaseCategory(oldCatId, newCatId, tx) {
-    const [amount] = await Transaction.update(
+    const [updatedCount] = await Transaction.update(
       { categoryId: newCatId },
-      { where: { categoryId: oldCatId }, transaction: tx }
+      { where: { categoryId: oldCatId }, transaction: tx },
     );
 
-    return amount;
+    return updatedCount;
   }
 
   async delete(id, tx) {
-    const amount = await Transaction.destroy(
-      { where: { id }, transaction: tx }
-    );
+    const deletedCount = await Transaction.destroy({
+      where: { id },
+      transaction: tx,
+    });
 
-    return amount;
+    return deletedCount;
   }
 }
 
