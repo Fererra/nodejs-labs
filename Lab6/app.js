@@ -2,6 +2,7 @@ import express from "express";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
+import apiRouter from "./routes/api.routes.js";
 import indexRouter from "./src/routes/index.js";
 import sequelize from "./config/database.js";
 import "./src/models/index.js";
@@ -21,6 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(express.static(join(__dirname, "public")));
 
 app.use("/", indexRouter);
+app.use("/api", apiRouter);
 
 const startServer = async () => {
   try {
