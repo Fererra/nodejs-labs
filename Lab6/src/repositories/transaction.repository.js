@@ -60,19 +60,30 @@ class TransactionRepository {
     return await Category.destroy({ where: { id }, transaction: tx });
   }
 
-  async getAll() {
+  async getAll(page = 1, limit = 10) {
     try {
-      const records = await Transaction.findAll({
+      const offset = (page - 1) * limit;
+
+      const { count, rows } = await Transaction.findAndCountAll({
         include: [Category, TransactionType, OperationDate],
         order: [[OperationDate, "dateValue", "DESC"]],
+        limit: limit,
+        offset: offset,
+        distinct: true
       });
-      return records.map(this.#mapToDTO);
+
+      return {
+        records: rows.map(this.#mapToDTO),
+        totalItems: count,
+        totalPages: Math.ceil(count / limit),
+        currentPage: page
+      };
     } catch (error) {
       console.error("Error fetching transactions via Sequelize:", error);
       throw error;
     }
   }
-
+  
   async getById(id) {
     try {
       const record = await Transaction.findByPk(id, {
@@ -85,8 +96,10 @@ class TransactionRepository {
     }
   }
 
-  async getFiltered({ type, category, startDate, endDate }) {
+  async getFiltered({ type, category, startDate, endDate, page = 1, limit = 10 }) {
     try {
+      const offset = (page - 1) * limit;
+
       const includeClause = [
         {
           model: TransactionType,
@@ -112,12 +125,20 @@ class TransactionRepository {
         },
       ];
 
-      const records = await Transaction.findAll({
+      const { count, rows } = await Transaction.findAndCountAll({
         include: includeClause,
         order: [[OperationDate, "dateValue", "DESC"]],
+        limit: limit,
+        offset: offset,
+        distinct: true
       });
 
-      return records.map(this.#mapToDTO);
+      return {
+        records: rows.map(this.#mapToDTO),
+        totalItems: count,
+        totalPages: Math.ceil(count / limit),
+        currentPage: page
+      };
     } catch (error) {
       console.error("Error filtering transactions via Sequelize:", error);
       throw error;
