@@ -45,6 +45,29 @@ class FinanceRestController {
       return res.status(500).json({ message: "Internal server error" });
     }
   };
+
+  delete = async (req, res) => {
+    try {
+      const id = Number(req.params.id);
+
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID format" });
+      }
+      const deletedCount = await this.service.deleteRecord(id);
+
+      if (!deletedCount) {
+        return res.status(404).json({ message: "Transaction not found" });
+      }
+      return res.status(204).send();
+
+    } catch (error) {
+      console.error(`Error deleting transaction ${req.params.id}:`, error);
+      return res.status(500).json({
+        message: "Internal Server Error",
+        error: error.message
+      });
+    }
+  };
 }
 
 export default FinanceRestController;
