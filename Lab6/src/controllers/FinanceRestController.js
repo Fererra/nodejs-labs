@@ -26,6 +26,38 @@ class FinanceRestController {
       return res.status(500).json({ message: "Internal server error" });
     }
   };
+  
+  create = async (req, res) => {
+      try {
+        const { amount, purchase, category, type } = req.body;
+        const parsedAmount = Number(amount);
+
+        if (
+          isNaN(parsedAmount) || 
+          parsedAmount <= 0 || 
+          !purchase || 
+          !category || 
+          !type
+        ) {
+          return res.status(400).json({ message: "Bad Request" });
+        }
+
+        const data = {
+          amount: parsedAmount,
+          purchase,
+          category,
+          type,
+        };
+
+        const newTransaction = await this.service.createRecord(data);
+
+        return res.status(201).json(newTransaction);
+
+      } catch (error) {
+        console.error("REST API Create Error:", error.message);
+        return res.status(500).json({ message: "Internal server error" });
+      }
+    };
 
   getById = async (req, res) => {
     try {
