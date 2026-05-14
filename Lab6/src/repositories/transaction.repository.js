@@ -60,8 +60,10 @@ class TransactionRepository {
     return await Category.destroy({ where: { id }, transaction: tx });
   }
 
-  async getAll(page = 1, limit = 10) {
+  async getAll(pagination = {}) {
     try {
+      const page = pagination.page || 1;
+      const limit = pagination.limit || 10;
       const offset = (page - 1) * limit;
 
       const { count, rows } = await Transaction.findAndCountAll({
@@ -69,21 +71,21 @@ class TransactionRepository {
         order: [[OperationDate, "dateValue", "DESC"]],
         limit: limit,
         offset: offset,
-        distinct: true
+        distinct: true,
       });
 
       return {
         records: rows.map(this.#mapToDTO),
         totalItems: count,
         totalPages: Math.ceil(count / limit),
-        currentPage: page
+        currentPage: page,
       };
     } catch (error) {
       console.error("Error fetching transactions via Sequelize:", error);
       throw error;
     }
   }
-  
+
   async getById(id) {
     try {
       const record = await Transaction.findByPk(id, {
@@ -96,7 +98,14 @@ class TransactionRepository {
     }
   }
 
-  async getFiltered({ type, category, startDate, endDate, page = 1, limit = 10 }) {
+  async getFiltered({
+    type,
+    category,
+    startDate,
+    endDate,
+    page = 1,
+    limit = 10,
+  }) {
     try {
       const offset = (page - 1) * limit;
 
@@ -130,14 +139,14 @@ class TransactionRepository {
         order: [[OperationDate, "dateValue", "DESC"]],
         limit: limit,
         offset: offset,
-        distinct: true
+        distinct: true,
       });
 
       return {
         records: rows.map(this.#mapToDTO),
         totalItems: count,
         totalPages: Math.ceil(count / limit),
-        currentPage: page
+        currentPage: page,
       };
     } catch (error) {
       console.error("Error filtering transactions via Sequelize:", error);

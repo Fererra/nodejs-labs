@@ -1,5 +1,5 @@
 import { Router } from "express";
-import FinanceRestController from "../controllers/financeRest.controller.js";
+import FinanceRestController from "../controllers/finance-rest.controller.js";
 import FinanceService from "../services/finance.service.js";
 import TransactionRepository from "../repositories/transaction.repository.js";
 

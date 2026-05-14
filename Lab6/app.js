@@ -2,7 +2,7 @@ import express from "express";
 import { dirname, join } from "path";
 import { fileURLToPath } from "url";
 
-import apiRouter from "./routes/api.routes.js";
+import apiRouter from "./src/routes/api.routes.js";
 import indexRouter from "./src/routes/index.js";
 import sequelize from "./config/database.js";
 import "./src/models/index.js";

@@ -13,15 +13,23 @@ class FinanceService {
     return await this.repository.getAllTypes();
   }
 
-  async getAllRecords(filters = {}, { page = 1, limit = 10 } = {}) {
-    const filtersParams = ["type", "category", "startDate", "endDate"];
-    const hasFilters = filtersParams.every((param) => filters[param] !== undefined);
+  async getAllRecords(filters = {}, paginationInput = {}) {
+    const pagination = {
+      page: paginationInput.page || 1,
+      limit: paginationInput.limit || 10,
+    };
+
+    const allowedFilters = ["type", "category", "startDate", "endDate"];
+
+    const hasFilters = allowedFilters.some(
+      (param) => filters[param] !== undefined && filters[param] !== "",
+    );
 
     if (hasFilters) {
       return await this.repository.getFiltered({ ...filters, ...pagination });
     }
 
-    return await this.repository.getAll(page, limit);
+    return await this.repository.getAll(pagination);
   }
 
   async getRecordById(id) {
