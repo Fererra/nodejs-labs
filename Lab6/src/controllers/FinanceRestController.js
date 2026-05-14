@@ -59,6 +59,45 @@ class FinanceRestController {
       }
     };
 
+  update = async (req, res) => {
+    try {
+      const id = parseInt(req.params.id, 10);
+      if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID format" });
+      }
+
+      const { amount, purchase, category, type } = req.body;
+      const parsedAmount = Number(amount);
+
+      if (
+        isNaN(parsedAmount) ||
+        parsedAmount <= 0 ||
+        !purchase ||
+        !category ||
+        !type
+      ) {
+        return res.status(400).json({ message: "Bad Request" });
+      }
+
+      const existing = await this.service.getRecordById(id);
+      if (!existing) {
+        return res.status(404).json({ message: "Not Found" });
+      }
+
+      await this.service.updateRecord(id, {
+        amount: parsedAmount,
+        purchase,
+        category,
+        type,
+      });
+
+      return res.status(200).json({ message: "Transaction updated" });
+    } catch (error) {
+      console.error(`Error updating transaction ${req.params.id}:`, error);
+      return res.status(500).json({ message: "Internal server error" });
+    }
+  };
+
   getById = async (req, res) => {
     try {
       const id = parseInt(req.params.id, 10);
