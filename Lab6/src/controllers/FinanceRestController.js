@@ -79,17 +79,16 @@ class FinanceRestController {
         return res.status(400).json({ message: "Bad Request" });
       }
 
-      const existing = await this.service.getRecordById(id);
-      if (!existing) {
-        return res.status(404).json({ message: "Not Found" });
-      }
-
-      await this.service.updateRecord(id, {
+      const updatedCount = await this.service.updateRecord(id, {
         amount: parsedAmount,
         purchase,
         category,
         type,
       });
+
+      if (!updatedCount) {
+        return res.status(404).json({ message: "Transaction not found" });
+      }
 
       return res.status(200).json({ message: "Transaction updated" });
     } catch (error) {
