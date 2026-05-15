@@ -2,12 +2,12 @@ version: "3.8"
 services:
   db:
     image: postgres:18-alpine
-    container_name: home_accounting_db
+    container_name: home_accounting_db-3
     environment:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: mysecretpassword
       POSTGRES_DB: accounting_db
     ports:
-      - "5432:5432"
+      - "5434:5432"
     volumes:
       - ./data/init.sql:/docker-entrypoint-initdb.d/init.sql

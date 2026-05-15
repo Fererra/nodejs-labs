@@ -45,6 +45,7 @@ class FinanceController {
   }
 
   _formatRecords(rows) {
+    if (!Array.isArray(rows)) return [];
     return rows.map((row) => {
       const plainRow = row.toJSON ? row.toJSON() : row;
       return {
@@ -63,13 +64,27 @@ class FinanceController {
         endDate: req.query.endDate || undefined,
       };
 
-      const records = await this.service.getAllRecords(filters);
+      const page = Number(req.query.page) || 1;
+      const limit = Number(req.query.limit) || 10;
+      const result = await this.service.getAllRecords(filters, {
+        page,
+        limit,
+      });
+
+      const records = result?.records || result;
 
       const categories = await this.service.getAllCategories();
       const types = await this.service.getAllTypes();
 
       return res.render("transaction", {
         transactions: this._formatRecords(records),
+        pagination: result?.records
+          ? {
+              totalItems: result.totalItems,
+              totalPages: result.totalPages,
+              currentPage: result.currentPage,
+            }
+          : null,
         query: req.query,
         categories,
         types,
