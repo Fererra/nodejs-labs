@@ -16,7 +16,7 @@ router.get("/", (req, res) => {
 router.get("/add-record-page", controller.getAddPage);
 router.post("/save", controller.createRecord);
 router.get("/transactions", controller.getAllRecords);
-router.get("/transaction/:id", controller.getRecordById);
+router.get("/transactions/:id", controller.getRecordById);
 router.get("/edit/:id", controller.getEditPage);
 router.post("/edit/:id", controller.updateRecord);
 router.post("/delete/:id", controller.deleteRecord);
