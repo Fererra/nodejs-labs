@@ -65,21 +65,29 @@ class TransactionRepository {
     return allPurchases.find((item) => item.id === id);
   }
 
-  async savePurchase(dto) {
+  async save(dto) {
     const db = await extractFromFileWithPromise(this.#filePath);
 
-    let category = db.categories.find(c => c.name === dto.category);
+    let category = db.categories.find((c) => c.name === dto.category);
     if (!category) {
-      const maxCatId = db.categories.reduce((max, c) => (c.id > max ? c.id : max), 0);
+      const maxCatId = db.categories.reduce(
+        (max, c) => (c.id > max ? c.id : max),
+        0,
+      );
 
       category = { id: maxCatId + 1, name: dto.category };
       db.categories.push(category);
     }
 
     const currentDate = new Date().toISOString().split("T")[0];
-    let operationDate = db.operationDates.find(d => d.dateValue === currentDate);
+    let operationDate = db.operationDates.find(
+      (d) => d.dateValue === currentDate,
+    );
     if (!operationDate) {
-      const maxDateId = db.operationDates.reduce((max, d) => (d.id > max ? d.id : max), 0);
+      const maxDateId = db.operationDates.reduce(
+        (max, d) => (d.id > max ? d.id : max),
+        0,
+      );
 
       operationDate = { id: maxDateId + 1, dateValue: currentDate };
       db.operationDates.push(operationDate);
@@ -90,7 +98,10 @@ class TransactionRepository {
       throw new Error(`Тип транзакції '${dto.type}' не знайдено в базі.`);
     }
 
-    const maxPurchaseId = db.purchases.reduce((max, p) => (p.id > max ? p.id : max), 0);
+    const maxPurchaseId = db.purchases.reduce(
+      (max, p) => (p.id > max ? p.id : max),
+      0,
+    );
     const newPurchase = {
       id: maxPurchaseId + 1,
       amount: dto.amount,
@@ -107,7 +118,7 @@ class TransactionRepository {
     return newPurchase;
   }
 
-  async updatePurchase(id, dto) {
+  async update(id, dto) {
     const db = await extractFromFileAsync(this.#filePath);
 
     const purchaseIndex = db.purchases.findIndex((p) => p.id === id);
@@ -115,8 +126,11 @@ class TransactionRepository {
 
     let category = db.categories.find((c) => c.name === dto.category);
     if (!category) {
-      const maxCatId = db.categories.reduce((max, c) => (c.id > max ? c.id : max), 0);
-      
+      const maxCatId = db.categories.reduce(
+        (max, c) => (c.id > max ? c.id : max),
+        0,
+      );
+
       category = { id: maxCatId + 1, name: dto.category };
       db.categories.push(category);
     }
@@ -135,7 +149,7 @@ class TransactionRepository {
     return db.purchases[purchaseIndex];
   }
 
-  async deletePurchase(id) {
+  async delete(id) {
     const db = await extractFromFileAsync(this.#filePath);
 
     const initialLength = db.purchases.length;
@@ -146,6 +160,5 @@ class TransactionRepository {
     }
   }
 }
-
 
 export default TransactionRepository;
